@@ -1,0 +1,58 @@
+{
+    "zabbix_export": {
+        "version": "7.0",
+        "template_groups": [
+            {
+                "uuid": "aa21e87878f2482090ab6f9a6126cce0",
+                "name": "CPD"
+            }
+        ],
+        "templates": [
+            {
+                "uuid": "03ccf8ae55c94720ab919c0567a99237",
+                "template": "QNAP TS-x73A",
+                "name": "QNAP TS-x73A",
+                "groups": [
+                    {
+                        "name": "CPD"
+                    }
+                ],
+                "items": [
+                    {
+                        "uuid": "ac76ec2906f641fca6d33befc585a891",
+                        "name": "Espa\u00e7o livre no disco /share/CACHEDEV1_DATA",
+                        "type": "CALCULATED",
+                        "key": "hrStorageFree.44",
+                        "value_type": "FLOAT",
+                        "params": "last(//hrStorageSize) - last(//hrStorageUsed.44)"
+                    },
+                    {
+                        "uuid": "d1dc3f87bf6e4321a52e4e23f968a174",
+                        "name": "Capacidade total do disco /share/CACHEDEV1_DATA",
+                        "type": "SNMP_AGENT",
+                        "snmp_oid": ".1.3.6.1.2.1.25.2.3.1.5.44",
+                        "key": "hrStorageSize",
+                        "units": "B"
+                    },
+                    {
+                        "uuid": "b61646351e99444f807730d79fa29161",
+                        "name": "Uso do disco /share/CACHEDEV1_DATA",
+                        "type": "SNMP_AGENT",
+                        "snmp_oid": ".1.3.6.1.2.1.25.2.3.1.6.44",
+                        "key": "hrStorageUsed.44",
+                        "units": "B"
+                    },
+                    {
+                        "uuid": "17b4ae35332b4acc8edccc30c797517f",
+                        "name": "Percentual de uso do disco /share/CACHEDEV1_DATA",
+                        "type": "CALCULATED",
+                        "key": "hrStorageUsedPercent.44",
+                        "value_type": "FLOAT",
+                        "units": "%",
+                        "params": "(last(//hrStorageUsed.44) / last(//hrStorageSize)) * 100"
+                    }
+                ]
+            }
+        ]
+    }
+}
