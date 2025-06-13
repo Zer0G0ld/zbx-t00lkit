@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>7.0</version>
+    <template_groups>
+        <template_group>
+            <uuid>aa21e87878f2482090ab6f9a6126cce0</uuid>
+            <name>CPD</name>
+        </template_group>
+    </template_groups>
+    <templates>
+        <template>
+            <uuid>96a48f0385ae47328c5963074114f0ec</uuid>
+            <template>Brother</template>
+            <name>Brother</name>
+            <groups>
+                <group>
+                    <name>CPD</name>
+                </group>
+            </groups>
+            <items>
+                <item>
+                    <uuid>cd9958f3ef9e4de29dd279a464e05b2b</uuid>
+                    <name>Bytes recebidos (Interface)</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.2.2.1.10.1</snmp_oid>
+                    <key>bytes.rece.interface</key>
+                    <units>Bytes</units>
+                </item>
+                <item>
+                    <uuid>7c6d2dc799f5427ba209c9cebb7ab584</uuid>
+                    <name>Bytes transmitidos (interface)</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.2.2.1.16.1</snmp_oid>
+                    <key>bytes.transm.interface</key>
+                    <units>Bytes</units>
+                </item>
+                <item>
+                    <uuid>c9b7b02cb085413fb515102460cf06f8</uuid>
+                    <name>Contato do administrador</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.1.4.0</snmp_oid>
+                    <key>ctt.adm</key>
+                    <delay>1h</delay>
+                    <value_type>TEXT</value_type>
+                    <trends>0</trends>
+                </item>
+                <item>
+                    <uuid>0e94a2cdbf6e4e0a802bfba515a5a4de</uuid>
+                    <name>Nome do dispositivo</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.1.5.0</snmp_oid>
+                    <key>disp.name</key>
+                    <delay>1h</delay>
+                    <value_type>TEXT</value_type>
+                    <trends>0</trends>
+                </item>
+                <item>
+                    <uuid>c03b6a725f7d4b3bafe49237d0ecdcc2</uuid>
+                    <name>Drum Capacidade Máxima</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.43.11.1.1.8.1.2</snmp_oid>
+                    <key>drum.capacidade</key>
+                    <delay>5m</delay>
+                    <units>páginas</units>
+                </item>
+                <item>
+                    <uuid>bb0ec18b00644dad8e1eea95d405bfc9</uuid>
+                    <name>Drum Restante</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.43.11.1.1.9.1.2</snmp_oid>
+                    <key>drum.restante</key>
+                    <delay>5m</delay>
+                    <units>páginas</units>
+                </item>
+                <item>
+                    <uuid>9900d7f5e0fc43a081aadfd144d049ca</uuid>
+                    <name>Drum (%) Restante</name>
+                    <type>CALCULATED</type>
+                    <key>drum.restante.percent</key>
+                    <units>%</units>
+                    <params>last(//drum.restante) / last(//drum.capacidade) * 100</params>
+                    <valuemap>
+                        <name>TonerStatus</name>
+                    </valuemap>
+                    <triggers>
+                        <trigger>
+                            <uuid>3ed714f9dc8c4bfbbd61ae54d7b0ad6d</uuid>
+                            <expression>last(/Brother/drum.restante.percent)&gt;10</expression>
+                            <name>Drum com menos de 10%</name>
+                            <priority>HIGH</priority>
+                        </trigger>
+                        <trigger>
+                            <uuid>164f93e764d440128256d577054b525a</uuid>
+                            <expression>last(/Brother/drum.restante.percent)&gt;5</expression>
+                            <name>Drum próximo do fim (&lt;5%) - Verificar necessidade de troca</name>
+                            <priority>DISASTER</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>71841e7cb2064940a8edea436e9c30a5</uuid>
+                    <name>Erros de entrada (interface)</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.2.2.1.14.1</snmp_oid>
+                    <key>error.entra</key>
+                    <units>erros</units>
+                    <triggers>
+                        <trigger>
+                            <uuid>8ab25e6b99c94cba8d7a5ecc69b4fa90</uuid>
+                            <expression>change(/Brother/error.entra)&gt;10 and last(/Brother/error.entra)&gt;10</expression>
+                            <name>Alto número de erros de entrada na interface</name>
+                            <priority>DISASTER</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>09006c78344e4f69b7fcac71552d9e4d</uuid>
+                    <name>Erros de saída</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.2.2.1.20.1</snmp_oid>
+                    <key>error.saida</key>
+                    <units>erros</units>
+                    <triggers>
+                        <trigger>
+                            <uuid>9e7de949062e438181d3c4c8f3e43c6c</uuid>
+                            <expression>change(/Brother/error.saida)&gt;10 and last(/Brother/error.saida)&gt;10</expression>
+                            <name>Alto número de erros de saída na interface</name>
+                            <priority>DISASTER</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>103a6bc937054bf8972abd7608042a11</uuid>
+                    <name>Ping ICMP</name>
+                    <type>SIMPLE</type>
+                    <key>icmpping</key>
+                    <valuemap>
+                        <name>Ping ICMP</name>
+                    </valuemap>
+                    <triggers>
+                        <trigger>
+                            <uuid>b9496f5484d84f14ace5fc081cbe51a6</uuid>
+                            <expression>max(/Brother/icmpping,3m)=0</expression>
+                            <name>Impressora offline</name>
+                            <priority>HIGH</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>d5b1457f4b9a48c49828ad35d1868103</uuid>
+                    <name>Percentual de perda de pacotes ICMP</name>
+                    <type>SIMPLE</type>
+                    <key>icmppingloss</key>
+                    <value_type>FLOAT</value_type>
+                    <triggers>
+                        <trigger>
+                            <uuid>bbc29b5ed1b04835801bc817b60f1c08</uuid>
+                            <expression>min(/Brother/icmppingloss,3m)&gt;20</expression>
+                            <name>Perda de ICMP (offline real da rede)</name>
+                            <priority>HIGH</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>c804fbe50d5940f9875ebaae5ffb7308</uuid>
+                    <name>Localização</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.1.6.0</snmp_oid>
+                    <key>local</key>
+                    <delay>1h</delay>
+                    <value_type>TEXT</value_type>
+                    <trends>0</trends>
+                </item>
+                <item>
+                    <uuid>ee0d3a99af78416da111db535b1dfbd3</uuid>
+                    <name>Contador Páginas</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.43.10.2.1.4.1.1</snmp_oid>
+                    <key>page.count</key>
+                    <delay>3m</delay>
+                    <units>páginas</units>
+                </item>
+                <item>
+                    <uuid>e8198eeb6641460e8464ca1ec4ff71a6</uuid>
+                    <name>Status da interface</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.2.2.1.8.1</snmp_oid>
+                    <key>status.interface</key>
+                    <valuemap>
+                        <name>status</name>
+                    </valuemap>
+                    <triggers>
+                        <trigger>
+                            <uuid>300b5c599320427abdf08dcc08c7cfd2</uuid>
+                            <expression>last(/Brother/status.interface)&lt;&gt;1</expression>
+                            <name>Interface com status diferente de UP</name>
+                            <priority>DISASTER</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>1bd6adacfba246faacc061066cc5915c</uuid>
+                    <name>Descrição do sistema</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.1.1.0</snmp_oid>
+                    <key>sys.desc</key>
+                    <delay>1h</delay>
+                    <value_type>TEXT</value_type>
+                    <trends>0</trends>
+                </item>
+                <item>
+                    <uuid>31c33c5c2f0e472cb3926045c22b4966</uuid>
+                    <name>Tempo de atividade</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.1.3.0</snmp_oid>
+                    <key>sys.uptime</key>
+                    <units>s</units>
+                    <triggers>
+                        <trigger>
+                            <uuid>4d230e004ff645c483fae1212410ff87</uuid>
+                            <expression>nodata(/Brother/sys.uptime,5m)=1</expression>
+                            <name>SNMP parado por muito tempo</name>
+                            <priority>HIGH</priority>
+                        </trigger>
+                        <trigger>
+                            <uuid>c6b5c495deb7469d9288942c5a12ab3a</uuid>
+                            <expression>change(/Brother/sys.uptime)&gt;0 and last(/Brother/sys.uptime)&lt;600</expression>
+                            <name>Tempo de atividade reiniciado</name>
+                            <priority>AVERAGE</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>cafd4b74933f4f2a8f5f59c02124ea7a</uuid>
+                    <name>Toner Preto - nível</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.43.11.1.1.7.1.1</snmp_oid>
+                    <key>toner.level.raw</key>
+                    <valuemap>
+                        <name>TonerStatus</name>
+                    </valuemap>
+                    <triggers>
+                        <trigger>
+                            <uuid>68a6f88e983d4b4abb48f9310a74a6bb</uuid>
+                            <expression>last(/Brother/toner.level.raw)&lt;5</expression>
+                            <name>Toner baixo - Verificar necessidade de reposição</name>
+                            <priority>HIGH</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+            </items>
+            <macros>
+                <macro>
+                    <macro>{$SNMP_COMMUNITY}</macro>
+                    <value>public</value>
+                    <description>Padrão, se usar outro SNMP troca aqui</description>
+                </macro>
+                <macro>
+                    <macro>{$UPDATE_INTERVAL}</macro>
+                    <value>300</value>
+                    <description>Intervalo padrão de 5min</description>
+                </macro>
+            </macros>
+            <valuemaps>
+                <valuemap>
+                    <uuid>112f1799cb7c4d4baae923199c59e71d</uuid>
+                    <name>Ping ICMP</name>
+                    <mappings>
+                        <mapping>
+                            <value>0</value>
+                            <newvalue>Falha</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>1</value>
+                            <newvalue>OK</newvalue>
+                        </mapping>
+                    </mappings>
+                </valuemap>
+                <valuemap>
+                    <uuid>aa355dcf9e27416797cd34eef9fc316f</uuid>
+                    <name>status</name>
+                    <mappings>
+                        <mapping>
+                            <value>1</value>
+                            <newvalue>up</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>2</value>
+                            <newvalue>down</newvalue>
+                        </mapping>
+                    </mappings>
+                </valuemap>
+                <valuemap>
+                    <uuid>7611615b9e404b749471266e05cd7990</uuid>
+                    <name>TonerStatus</name>
+                    <mappings>
+                        <mapping>
+                            <type>GREATER_OR_EQUAL</type>
+                            <value>20</value>
+                            <newvalue>OK</newvalue>
+                        </mapping>
+                        <mapping>
+                            <type>LESS_OR_EQUAL</type>
+                            <value>20</value>
+                            <newvalue>Baixo</newvalue>
+                        </mapping>
+                        <mapping>
+                            <type>LESS_OR_EQUAL</type>
+                            <value>5</value>
+                            <newvalue>Crítico</newvalue>
+                        </mapping>
+                    </mappings>
+                </valuemap>
+            </valuemaps>
+        </template>
+    </templates>
+    <triggers>
+        <trigger>
+            <uuid>e11f5a731f8c407ea5aaa9fb7a9d24c7</uuid>
+            <expression>last(/Brother/icmpping)=1 and nodata(/Brother/sys.uptime,3m)=1</expression>
+            <name>Impressora ligada, mas não responde SNMP</name>
+            <priority>HIGH</priority>
+        </trigger>
+    </triggers>
+    <graphs>
+        <graph>
+            <uuid>7b0206b4f5fc49d6b5f50955b33e71de</uuid>
+            <name>Nível de toner e drum</name>
+            <graph_items>
+                <graph_item>
+                    <color>199C0D</color>
+                    <calc_fnc>ALL</calc_fnc>
+                    <item>
+                        <host>Brother</host>
+                        <key>drum.restante.percent</key>
+                    </item>
+                </graph_item>
+                <graph_item>
+                    <sortorder>1</sortorder>
+                    <color>F63100</color>
+                    <calc_fnc>ALL</calc_fnc>
+                    <item>
+                        <host>Brother</host>
+                        <key>toner.level.raw</key>
+                    </item>
+                </graph_item>
+            </graph_items>
+        </graph>
+    </graphs>
+</zabbix_export>
