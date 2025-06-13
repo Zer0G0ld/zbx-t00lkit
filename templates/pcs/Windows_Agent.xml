@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>7.0</version>
+    <template_groups>
+        <template_group>
+            <uuid>80ca99c96e514068a948a41b1eaf9101</uuid>
+            <name>Windows</name>
+        </template_group>
+    </template_groups>
+    <templates>
+        <template>
+            <uuid>d29b468371734516b44ff67a2718653d</uuid>
+            <template>Windows Agent</template>
+            <name>Windows Agent</name>
+            <groups>
+                <group>
+                    <name>Windows</name>
+                </group>
+            </groups>
+            <items>
+                <item>
+                    <uuid>cbe3ab9ad4244c0aaaaac8b4ee131d62</uuid>
+                    <name>Zabbix agent ping</name>
+                    <key>agent.ping</key>
+                    <description>The agent always returns &quot;1&quot; for this item. May be used in combination with `nodata()` for the availability check.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>system</value>
+                        </tag>
+                    </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>a22011dd4177476ab67f99235720281c</uuid>
+                            <expression>last(/Windows Agent/agent.ping)&lt;&gt;0</expression>
+                            <name>Serviço Zabbix Agent está parado</name>
+                            <priority>HIGH</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>6d12445462f5406fbf0e988f11e2a145</uuid>
+                    <name>Cache bytes</name>
+                    <key>perf_counter_en[&quot;\Memory\Cache Bytes&quot;]</key>
+                    <units>B</units>
+                    <description>Cache Bytes is the sum of the Memory\\System Cache Resident Bytes, Memory\\System Driver Resident Bytes, Memory\\System Code Resident Bytes, and Memory\\Pool Paged Resident Bytes counters. This counter displays the last observed value only; it is not an average.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>memory</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>1395793f8bc74ccfa5cf3c60cbcba129</uuid>
+                    <name>Memory pool non-paged</name>
+                    <key>perf_counter_en[&quot;\Memory\Pool Nonpaged Bytes&quot;]</key>
+                    <units>B</units>
+                    <description>This measures the size, in bytes, of the non-paged pool. This is an area of system memory for objects that cannot be written to disk but instead must remain in physical memory as long as they are allocated.
+There is a possible memory leak if the value is greater than 175MB (or 100MB with the /3GB switch). Consequently, Event ID 2019 is recorded in the system event log.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>memory</value>
+                        </tag>
+                    </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>b860dce8600447e5851234655f66bb56</uuid>
+                            <expression>last(/Windows Agent/perf_counter_en[&quot;\Memory\Pool Nonpaged Bytes&quot;])&gt;524288000</expression>
+                            <name>Memória não paginada alta (&gt;500MB)</name>
+                            <priority>AVERAGE</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>294ab721449d4b2b8c3a4f5f80e41cdb</uuid>
+                    <name>Used swap space in %</name>
+                    <key>perf_counter_en[&quot;\Paging file(_Total)\% Usage&quot;]</key>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>The used space of swap volume/file in percent.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>memory</value>
+                        </tag>
+                        <tag>
+                            <tag>component</tag>
+                            <value>storage</value>
+                        </tag>
+                    </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>e593bf2c550f468785feb40a4dcf5c62</uuid>
+                            <expression>last(/Windows Agent/perf_counter_en[&quot;\Paging file(_Total)\% Usage&quot;])&gt;70</expression>
+                            <name>Uso de Swap acima de 70%</name>
+                            <priority>AVERAGE</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>c3712c042bdc4431af4d1f0d3287f567</uuid>
+                    <name>CPU DPC time</name>
+                    <key>perf_counter_en[&quot;\Processor Information(_total)\% DPC Time&quot;]</key>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>Processor DPC time is the time that a single processor spent receiving and servicing deferred procedure calls (DPCs). DPCs are interrupts that run at a lower priority than standard interrupts. `% DPC Time` is a component of `% Privileged Time` because DPCs are executed in privileged mode. If a high `% DPC Time` is sustained, there may be a processor bottleneck or an application or hardware related issue that can significantly diminish overall system performance.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>cpu</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>3a139c6aa75e469b87fbd0ff7e0c5ec0</uuid>
+                    <name>CPU interrupt time</name>
+                    <key>perf_counter_en[&quot;\Processor Information(_total)\% Interrupt Time&quot;]</key>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>The processor information `% Interrupt Time` counter indicates how much time the processor spends handling hardware interrupts during sample intervals. It reflects the activity of devices like the system clock, mouse, disk drivers, and network cards. A value above 20% suggests possible hardware issues.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>cpu</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>d586f35719104e2b9d01cc3f4a43753b</uuid>
+                    <name>CPU privileged time</name>
+                    <key>perf_counter_en[&quot;\Processor Information(_total)\% Privileged Time&quot;]</key>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>The processor information `% Privileged Time` counter shows the percent of time that the processor is spent executing in Kernel (or Privileged) mode. Privileged mode includes services interrupts inside Interrupt Service Routines (ISRs), executing Deferred Procedure Calls (DPCs), Device Driver calls and other kernel-mode functions of the Windows Operating System.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>cpu</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>7cd662aba17e48fd961e8dd19637d125</uuid>
+                    <name>CPU user time</name>
+                    <key>perf_counter_en[&quot;\Processor Information(_total)\% User Time&quot;]</key>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>The processor information `% User Time` counter shows the percent of time that the processor(s) is spent executing in User mode.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>cpu</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>1d47e283a0c0409cb0dd412016ded78b</uuid>
+                    <name>CPU queue length</name>
+                    <key>perf_counter_en[&quot;\System\Processor Queue Length&quot;]</key>
+                    <value_type>FLOAT</value_type>
+                    <description>The Processor Queue Length shows the number of threads that are observed as delayed in the processor Ready Queue and are waiting to be executed.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>cpu</value>
+                        </tag>
+                    </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>fc1cd7a0275b480aaa53e374f8dc633c</uuid>
+                            <expression>avg(/Windows Agent/perf_counter_en[&quot;\System\Processor Queue Length&quot;],5m)&gt;5</expression>
+                            <name>Alta fila de processador (&gt;5) por 5 minutos</name>
+                            <priority>AVERAGE</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>42d47118592e4d47936a1697c7115e08</uuid>
+                    <name>Number of processes</name>
+                    <key>proc.num[]</key>
+                    <description>The number of processes.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>os</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>e9f90a7a24254a0aa209ef1cd6c28894</uuid>
+                    <name>CPU utilization</name>
+                    <key>system.cpu.util</key>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>CPU utilization expressed in %.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>cpu</value>
+                        </tag>
+                    </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>dc75b26fde384468b9be07db0d7560cc</uuid>
+                            <expression>avg(/Windows Agent/system.cpu.util,5m)&gt;90</expression>
+                            <name>Alta utilização de CPU (&gt;90%) por 5 minutos</name>
+                            <priority>HIGH</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>cd8b9b8f31e44d679dd1c4fb6fcf9dbf</uuid>
+                    <name>System name</name>
+                    <key>system.hostname</key>
+                    <delay>1h</delay>
+                    <value_type>CHAR</value_type>
+                    <trends>0</trends>
+                    <description>The host name of the system.</description>
+                    <inventory_link>NAME</inventory_link>
+                    <preprocessing>
+                        <step>
+                            <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                            <parameters>
+                                <parameter>1d</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>system</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>328128d9d2904036b8ab672fb0628590</uuid>
+                    <name>System local time</name>
+                    <key>system.localtime</key>
+                    <units>unixtime</units>
+                    <description>The local system time of the host.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>system</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>186d54fa95884c719acf8b4f6455cab6</uuid>
+                    <name>Operating system architecture</name>
+                    <key>system.sw.arch</key>
+                    <delay>1h</delay>
+                    <value_type>CHAR</value_type>
+                    <trends>0</trends>
+                    <description>The architecture of the operating system.</description>
+                    <preprocessing>
+                        <step>
+                            <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                            <parameters>
+                                <parameter>1d</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>os</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>445f305ec49045ddb59c534cffeedddf</uuid>
+                    <name>Operating system</name>
+                    <key>system.sw.os</key>
+                    <delay>1h</delay>
+                    <value_type>CHAR</value_type>
+                    <trends>0</trends>
+                    <inventory_link>OS</inventory_link>
+                    <preprocessing>
+                        <step>
+                            <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                            <parameters>
+                                <parameter>1d</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>os</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>e71a5cd9f2244a9fa63f496549c6bcf7</uuid>
+                    <name>Total swap space</name>
+                    <key>system.swap.size[,total]</key>
+                    <units>B</units>
+                    <description>The total space of the swap volume/file expressed in bytes.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>memory</value>
+                        </tag>
+                        <tag>
+                            <tag>component</tag>
+                            <value>storage</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>0286042c325e4a948db15a9ef240f328</uuid>
+                    <name>System description</name>
+                    <key>system.uname</key>
+                    <delay>15m</delay>
+                    <value_type>CHAR</value_type>
+                    <trends>0</trends>
+                    <description>System description of the host.</description>
+                    <preprocessing>
+                        <step>
+                            <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                            <parameters>
+                                <parameter>1d</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>system</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>e8e6f4775d0c43f7a8a451797164509c</uuid>
+                    <name>Uptime</name>
+                    <key>system.uptime</key>
+                    <delay>30s</delay>
+                    <trends>0</trends>
+                    <units>uptime</units>
+                    <description>The system uptime expressed in the following format: &quot;N days, hh:mm:ss&quot;.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>system</value>
+                        </tag>
+                    </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>7f0b9c8366d64400a71df385b6f71544</uuid>
+                            <expression>last(/Windows Agent/system.uptime)&lt;600</expression>
+                            <name>Sistema reiniciado (uptime menor que 10 min)</name>
+                            <priority>INFO</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>0f90b20a4af94d7989234d306dc824ac</uuid>
+                    <name>Total memory</name>
+                    <key>vm.memory.size[total]</key>
+                    <units>B</units>
+                    <description>Total memory expressed in bytes.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>memory</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>e11b02d40a23490e86a83d63d217bc9a</uuid>
+                    <name>Used memory</name>
+                    <key>vm.memory.size[used]</key>
+                    <units>B</units>
+                    <description>Used memory in bytes.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>memory</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>982afc523c7c47e98dec50fe7f46e675</uuid>
+                    <name>Memory utilization</name>
+                    <type>CALCULATED</type>
+                    <key>vm.memory.util</key>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <params>last(//vm.memory.size[used]) / last(//vm.memory.size[total]) * 100</params>
+                    <description>Memory utilization in %.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>memory</value>
+                        </tag>
+                    </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>b4bc23e973944905aeeb546a081596c3</uuid>
+                            <expression>last(/Windows Agent/vm.memory.util)&gt;90</expression>
+                            <name>Utilização de memória &gt;90%</name>
+                            <priority>HIGH</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>9ed2ec2af5e342b590942c5d2a394723</uuid>
+                    <name>Windows: Network interfaces WMI get</name>
+                    <key>wmi.getall[root\cimv2,&quot;select Name,Description,NetConnectionID,Speed,AdapterTypeId,NetConnectionStatus,GUID from win32_networkadapter where PhysicalAdapter=True and NetConnectionStatus&gt;0&quot;]</key>
+                    <history>0</history>
+                    <value_type>TEXT</value_type>
+                    <trends>0</trends>
+                    <description>Raw data of `win32_networkadapter.`</description>
+                    <preprocessing>
+                        <step>
+                            <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                            <parameters>
+                                <parameter>1h</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>raw</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>89b263ee0288488eba4ef537b659b627</uuid>
+                    <name>Number of cores</name>
+                    <key>wmi.get[root/cimv2,&quot;Select NumberOfLogicalProcessors from Win32_ComputerSystem&quot;]</key>
+                    <description>The number of logical processors available on the computer.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>cpu</value>
+                        </tag>
+                    </tags>
+                </item>
+            </items>
+        </template>
+    </templates>
+</zabbix_export>
