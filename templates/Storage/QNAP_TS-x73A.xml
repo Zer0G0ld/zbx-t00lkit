@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>7.0</version>
+    <template_groups>
+        <template_group>
+            <uuid>aa21e87878f2482090ab6f9a6126cce0</uuid>
+            <name>CPD</name>
+        </template_group>
+    </template_groups>
+    <templates>
+        <template>
+            <uuid>03ccf8ae55c94720ab919c0567a99237</uuid>
+            <template>QNAP TS-x73A</template>
+            <name>QNAP TS-x73A</name>
+            <groups>
+                <group>
+                    <name>CPD</name>
+                </group>
+            </groups>
+            <items>
+                <item>
+                    <uuid>ac76ec2906f641fca6d33befc585a891</uuid>
+                    <name>Espaço livre no disco /share/CACHEDEV1_DATA</name>
+                    <type>CALCULATED</type>
+                    <key>hrStorageFree.44</key>
+                    <value_type>FLOAT</value_type>
+                    <params>last(//hrStorageSize) - last(//hrStorageUsed.44)</params>
+                </item>
+                <item>
+                    <uuid>d1dc3f87bf6e4321a52e4e23f968a174</uuid>
+                    <name>Capacidade total do disco /share/CACHEDEV1_DATA</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.25.2.3.1.5.44</snmp_oid>
+                    <key>hrStorageSize</key>
+                    <units>B</units>
+                </item>
+                <item>
+                    <uuid>b61646351e99444f807730d79fa29161</uuid>
+                    <name>Uso do disco /share/CACHEDEV1_DATA</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.25.2.3.1.6.44</snmp_oid>
+                    <key>hrStorageUsed.44</key>
+                    <units>B</units>
+                </item>
+                <item>
+                    <uuid>17b4ae35332b4acc8edccc30c797517f</uuid>
+                    <name>Percentual de uso do disco /share/CACHEDEV1_DATA</name>
+                    <type>CALCULATED</type>
+                    <key>hrStorageUsedPercent.44</key>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <params>(last(//hrStorageUsed.44) / last(//hrStorageSize)) * 100</params>
+                </item>
+            </items>
+        </template>
+    </templates>
+</zabbix_export>
