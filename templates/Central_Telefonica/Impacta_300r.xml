@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>7.0</version>
+    <template_groups>
+        <template_group>
+            <uuid>aa21e87878f2482090ab6f9a6126cce0</uuid>
+            <name>CPD</name>
+        </template_group>
+    </template_groups>
+    <templates>
+        <template>
+            <uuid>5b1c0b1c73114de98fd18dfc9bfdbea5</uuid>
+            <template>Central Impacta 300r</template>
+            <name>Central Impacta 300r</name>
+            <groups>
+                <group>
+                    <name>CPD</name>
+                </group>
+            </groups>
+            <items>
+                <item>
+                    <uuid>2f21f83f19384e4ab8649c88298d55b1</uuid>
+                    <name>Checagem do Host</name>
+                    <type>SIMPLE</type>
+                    <key>icmpping</key>
+                    <valuemap>
+                        <name>Check ICMP</name>
+                    </valuemap>
+                    <triggers>
+                        <trigger>
+                            <uuid>0c72c1f01f534f289ac6dc3205695a1d</uuid>
+                            <expression>last(/Central Impacta 300r/icmpping)=0</expression>
+                            <name>Central Desligada</name>
+                            <event_name>A central Impacta 300R está INDISPONÍVEL (sem resposta ICMP)</event_name>
+                            <priority>HIGH</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>f848273fcaf94b95ad909fb9aa9c9415</uuid>
+                    <name>Nome da interface</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.2.2.1.2.5</snmp_oid>
+                    <key>ifName.eth1</key>
+                    <delay>1h</delay>
+                    <value_type>TEXT</value_type>
+                    <trends>0</trends>
+                </item>
+                <item>
+                    <uuid>0f30be1f52ee419cac96c5c9dd0d34fe</uuid>
+                    <name>Status operacional (up/down)</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.2.2.1.8.5</snmp_oid>
+                    <key>ifOperStatus.eth1</key>
+                    <valuemap>
+                        <name>Interface OperStatus</name>
+                    </valuemap>
+                    <triggers>
+                        <trigger>
+                            <uuid>35811ebdf0964a88b8ab2fac7705c21d</uuid>
+                            <expression>last(/Central Impacta 300r/ifOperStatus.eth1)=2</expression>
+                            <name>Interface eth1 inativa</name>
+                            <priority>HIGH</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>10c5425398ed4341be102f1043ac8afd</uuid>
+                    <name>Erros de entrada</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.2.2.1.14.5</snmp_oid>
+                    <key>net.if.in.errors[eth1]</key>
+                </item>
+                <item>
+                    <uuid>734e16b0127d408f8b6b414a11e2dab3</uuid>
+                    <name>Bytes recebidos</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>1.3.6.1.2.1.2.2.1.10.5</snmp_oid>
+                    <key>net.if.in[eth1]</key>
+                    <units>B</units>
+                </item>
+                <item>
+                    <uuid>3f51469089a44e539f4866243f36a43c</uuid>
+                    <name>Erros de saída</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.2.2.1.20.5</snmp_oid>
+                    <key>net.if.out.errors[eth1]</key>
+                </item>
+                <item>
+                    <uuid>98f5de1bcb684816a7e51af402ba8767</uuid>
+                    <name>Bytes enviados</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.2.2.1.16.5</snmp_oid>
+                    <key>net.if.out[eth1]</key>
+                    <units>B</units>
+                </item>
+                <item>
+                    <uuid>36291632a28041c6a4137ab6a0263ab3</uuid>
+                    <name>Modelo do dispositivo</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.1.1.0</snmp_oid>
+                    <key>sysDescr</key>
+                    <delay>1h</delay>
+                    <value_type>TEXT</value_type>
+                    <trends>0</trends>
+                </item>
+                <item>
+                    <uuid>6ad44fde38694d8caba0ab2f95aee4c7</uuid>
+                    <name>Nome do host</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.1.5.0</snmp_oid>
+                    <key>sysName</key>
+                    <delay>1h</delay>
+                    <value_type>TEXT</value_type>
+                    <trends>0</trends>
+                </item>
+                <item>
+                    <uuid>ce0c31b27e884c7185a1fbe015db22c9</uuid>
+                    <name>Uptime do sistema</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.1.3.0</snmp_oid>
+                    <key>sysUptime</key>
+                    <units>s</units>
+                </item>
+            </items>
+            <valuemaps>
+                <valuemap>
+                    <uuid>02bb957dcc4c46b99ba3431190c039e8</uuid>
+                    <name>Check ICMP</name>
+                    <mappings>
+                        <mapping>
+                            <value>0</value>
+                            <newvalue>Falha</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>1</value>
+                            <newvalue>OK</newvalue>
+                        </mapping>
+                    </mappings>
+                </valuemap>
+                <valuemap>
+                    <uuid>80bb47b6225b47b89be24231b4eb0e8b</uuid>
+                    <name>Interface OperStatus</name>
+                    <mappings>
+                        <mapping>
+                            <value>1</value>
+                            <newvalue>up</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>2</value>
+                            <newvalue>down</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>3</value>
+                            <newvalue>testing</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>4</value>
+                            <newvalue>unknown</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>5</value>
+                            <newvalue>dormant</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>6</value>
+                            <newvalue>notPresent</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>7</value>
+                            <newvalue>lowerLayerDown</newvalue>
+                        </mapping>
+                    </mappings>
+                </valuemap>
+            </valuemaps>
+        </template>
+    </templates>
+    <graphs>
+        <graph>
+            <uuid>0c3fbc7bcaf247aba6ba98a55e555d40</uuid>
+            <name>Entrada e Saida de Bytes</name>
+            <graph_items>
+                <graph_item>
+                    <drawtype>BOLD_LINE</drawtype>
+                    <color>0040FF</color>
+                    <calc_fnc>ALL</calc_fnc>
+                    <item>
+                        <host>Central Impacta 300r</host>
+                        <key>net.if.out[eth1]</key>
+                    </item>
+                </graph_item>
+                <graph_item>
+                    <sortorder>1</sortorder>
+                    <drawtype>BOLD_LINE</drawtype>
+                    <color>00FF00</color>
+                    <calc_fnc>ALL</calc_fnc>
+                    <item>
+                        <host>Central Impacta 300r</host>
+                        <key>net.if.in[eth1]</key>
+                    </item>
+                </graph_item>
+            </graph_items>
+        </graph>
+        <graph>
+            <uuid>1931f5c1b0ba49e0bec08ba19f6b1a73</uuid>
+            <name>Erros</name>
+            <graph_items>
+                <graph_item>
+                    <color>199C0D</color>
+                    <calc_fnc>ALL</calc_fnc>
+                    <item>
+                        <host>Central Impacta 300r</host>
+                        <key>net.if.in.errors[eth1]</key>
+                    </item>
+                </graph_item>
+                <graph_item>
+                    <sortorder>1</sortorder>
+                    <color>F63100</color>
+                    <calc_fnc>ALL</calc_fnc>
+                    <item>
+                        <host>Central Impacta 300r</host>
+                        <key>net.if.out.errors[eth1]</key>
+                    </item>
+                </graph_item>
+            </graph_items>
+        </graph>
+    </graphs>
+</zabbix_export>
