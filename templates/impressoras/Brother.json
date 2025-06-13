@@ -1,0 +1,351 @@
+{
+    "zabbix_export": {
+        "version": "7.0",
+        "template_groups": [
+            {
+                "uuid": "aa21e87878f2482090ab6f9a6126cce0",
+                "name": "CPD"
+            }
+        ],
+        "templates": [
+            {
+                "uuid": "96a48f0385ae47328c5963074114f0ec",
+                "template": "Brother",
+                "name": "Brother",
+                "groups": [
+                    {
+                        "name": "CPD"
+                    }
+                ],
+                "items": [
+                    {
+                        "uuid": "cd9958f3ef9e4de29dd279a464e05b2b",
+                        "name": "Bytes recebidos (Interface)",
+                        "type": "SNMP_AGENT",
+                        "snmp_oid": ".1.3.6.1.2.1.2.2.1.10.1",
+                        "key": "bytes.rece.interface",
+                        "units": "Bytes"
+                    },
+                    {
+                        "uuid": "7c6d2dc799f5427ba209c9cebb7ab584",
+                        "name": "Bytes transmitidos (interface)",
+                        "type": "SNMP_AGENT",
+                        "snmp_oid": ".1.3.6.1.2.1.2.2.1.16.1",
+                        "key": "bytes.transm.interface",
+                        "units": "Bytes"
+                    },
+                    {
+                        "uuid": "c9b7b02cb085413fb515102460cf06f8",
+                        "name": "Contato do administrador",
+                        "type": "SNMP_AGENT",
+                        "snmp_oid": ".1.3.6.1.2.1.1.4.0",
+                        "key": "ctt.adm",
+                        "delay": "1h",
+                        "value_type": "TEXT",
+                        "trends": "0"
+                    },
+                    {
+                        "uuid": "0e94a2cdbf6e4e0a802bfba515a5a4de",
+                        "name": "Nome do dispositivo",
+                        "type": "SNMP_AGENT",
+                        "snmp_oid": ".1.3.6.1.2.1.1.5.0",
+                        "key": "disp.name",
+                        "delay": "1h",
+                        "value_type": "TEXT",
+                        "trends": "0"
+                    },
+                    {
+                        "uuid": "c03b6a725f7d4b3bafe49237d0ecdcc2",
+                        "name": "Drum Capacidade M\u00e1xima",
+                        "type": "SNMP_AGENT",
+                        "snmp_oid": ".1.3.6.1.2.1.43.11.1.1.8.1.2",
+                        "key": "drum.capacidade",
+                        "delay": "5m",
+                        "units": "p\u00e1ginas"
+                    },
+                    {
+                        "uuid": "bb0ec18b00644dad8e1eea95d405bfc9",
+                        "name": "Drum Restante",
+                        "type": "SNMP_AGENT",
+                        "snmp_oid": ".1.3.6.1.2.1.43.11.1.1.9.1.2",
+                        "key": "drum.restante",
+                        "delay": "5m",
+                        "units": "p\u00e1ginas"
+                    },
+                    {
+                        "uuid": "9900d7f5e0fc43a081aadfd144d049ca",
+                        "name": "Drum (%) Restante",
+                        "type": "CALCULATED",
+                        "key": "drum.restante.percent",
+                        "units": "%",
+                        "params": "last(//drum.restante) / last(//drum.capacidade) * 100",
+                        "valuemap": {
+                            "name": "TonerStatus"
+                        },
+                        "triggers": [
+                            {
+                                "uuid": "3ed714f9dc8c4bfbbd61ae54d7b0ad6d",
+                                "expression": "last(/Brother/drum.restante.percent)>10",
+                                "name": "Drum com menos de 10%",
+                                "priority": "HIGH"
+                            },
+                            {
+                                "uuid": "164f93e764d440128256d577054b525a",
+                                "expression": "last(/Brother/drum.restante.percent)>5",
+                                "name": "Drum pr\u00f3ximo do fim (<5%) - Verificar necessidade de troca",
+                                "priority": "DISASTER"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "71841e7cb2064940a8edea436e9c30a5",
+                        "name": "Erros de entrada (interface)",
+                        "type": "SNMP_AGENT",
+                        "snmp_oid": ".1.3.6.1.2.1.2.2.1.14.1",
+                        "key": "error.entra",
+                        "units": "erros",
+                        "triggers": [
+                            {
+                                "uuid": "8ab25e6b99c94cba8d7a5ecc69b4fa90",
+                                "expression": "change(/Brother/error.entra)>10 and last(/Brother/error.entra)>10",
+                                "name": "Alto n\u00famero de erros de entrada na interface",
+                                "priority": "DISASTER"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "09006c78344e4f69b7fcac71552d9e4d",
+                        "name": "Erros de sa\u00edda",
+                        "type": "SNMP_AGENT",
+                        "snmp_oid": ".1.3.6.1.2.1.2.2.1.20.1",
+                        "key": "error.saida",
+                        "units": "erros",
+                        "triggers": [
+                            {
+                                "uuid": "9e7de949062e438181d3c4c8f3e43c6c",
+                                "expression": "change(/Brother/error.saida)>10 and last(/Brother/error.saida)>10",
+                                "name": "Alto n\u00famero de erros de sa\u00edda na interface",
+                                "priority": "DISASTER"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "103a6bc937054bf8972abd7608042a11",
+                        "name": "Ping ICMP",
+                        "type": "SIMPLE",
+                        "key": "icmpping",
+                        "valuemap": {
+                            "name": "Ping ICMP"
+                        },
+                        "triggers": [
+                            {
+                                "uuid": "b9496f5484d84f14ace5fc081cbe51a6",
+                                "expression": "max(/Brother/icmpping,3m)=0",
+                                "name": "Impressora offline",
+                                "priority": "HIGH"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "d5b1457f4b9a48c49828ad35d1868103",
+                        "name": "Percentual de perda de pacotes ICMP",
+                        "type": "SIMPLE",
+                        "key": "icmppingloss",
+                        "value_type": "FLOAT",
+                        "triggers": [
+                            {
+                                "uuid": "bbc29b5ed1b04835801bc817b60f1c08",
+                                "expression": "min(/Brother/icmppingloss,3m)>20",
+                                "name": "Perda de ICMP (offline real da rede)",
+                                "priority": "HIGH"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "c804fbe50d5940f9875ebaae5ffb7308",
+                        "name": "Localiza\u00e7\u00e3o",
+                        "type": "SNMP_AGENT",
+                        "snmp_oid": ".1.3.6.1.2.1.1.6.0",
+                        "key": "local",
+                        "delay": "1h",
+                        "value_type": "TEXT",
+                        "trends": "0"
+                    },
+                    {
+                        "uuid": "ee0d3a99af78416da111db535b1dfbd3",
+                        "name": "Contador P\u00e1ginas",
+                        "type": "SNMP_AGENT",
+                        "snmp_oid": ".1.3.6.1.2.1.43.10.2.1.4.1.1",
+                        "key": "page.count",
+                        "delay": "3m",
+                        "units": "p\u00e1ginas"
+                    },
+                    {
+                        "uuid": "e8198eeb6641460e8464ca1ec4ff71a6",
+                        "name": "Status da interface",
+                        "type": "SNMP_AGENT",
+                        "snmp_oid": ".1.3.6.1.2.1.2.2.1.8.1",
+                        "key": "status.interface",
+                        "valuemap": {
+                            "name": "status"
+                        },
+                        "triggers": [
+                            {
+                                "uuid": "300b5c599320427abdf08dcc08c7cfd2",
+                                "expression": "last(/Brother/status.interface)<>1",
+                                "name": "Interface com status diferente de UP",
+                                "priority": "DISASTER"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "1bd6adacfba246faacc061066cc5915c",
+                        "name": "Descri\u00e7\u00e3o do sistema",
+                        "type": "SNMP_AGENT",
+                        "snmp_oid": ".1.3.6.1.2.1.1.1.0",
+                        "key": "sys.desc",
+                        "delay": "1h",
+                        "value_type": "TEXT",
+                        "trends": "0"
+                    },
+                    {
+                        "uuid": "31c33c5c2f0e472cb3926045c22b4966",
+                        "name": "Tempo de atividade",
+                        "type": "SNMP_AGENT",
+                        "snmp_oid": ".1.3.6.1.2.1.1.3.0",
+                        "key": "sys.uptime",
+                        "units": "s",
+                        "triggers": [
+                            {
+                                "uuid": "4d230e004ff645c483fae1212410ff87",
+                                "expression": "nodata(/Brother/sys.uptime,5m)=1",
+                                "name": "SNMP parado por muito tempo",
+                                "priority": "HIGH"
+                            },
+                            {
+                                "uuid": "c6b5c495deb7469d9288942c5a12ab3a",
+                                "expression": "change(/Brother/sys.uptime)>0 and last(/Brother/sys.uptime)<600",
+                                "name": "Tempo de atividade reiniciado",
+                                "priority": "AVERAGE"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "cafd4b74933f4f2a8f5f59c02124ea7a",
+                        "name": "Toner Preto - n\u00edvel",
+                        "type": "SNMP_AGENT",
+                        "snmp_oid": ".1.3.6.1.2.1.43.11.1.1.7.1.1",
+                        "key": "toner.level.raw",
+                        "valuemap": {
+                            "name": "TonerStatus"
+                        },
+                        "triggers": [
+                            {
+                                "uuid": "68a6f88e983d4b4abb48f9310a74a6bb",
+                                "expression": "last(/Brother/toner.level.raw)<5",
+                                "name": "Toner baixo - Verificar necessidade de reposi\u00e7\u00e3o",
+                                "priority": "HIGH"
+                            }
+                        ]
+                    }
+                ],
+                "macros": [
+                    {
+                        "macro": "{$SNMP_COMMUNITY}",
+                        "value": "public",
+                        "description": "Padr\u00e3o, se usar outro SNMP troca aqui"
+                    },
+                    {
+                        "macro": "{$UPDATE_INTERVAL}",
+                        "value": "300",
+                        "description": "Intervalo padr\u00e3o de 5min"
+                    }
+                ],
+                "valuemaps": [
+                    {
+                        "uuid": "112f1799cb7c4d4baae923199c59e71d",
+                        "name": "Ping ICMP",
+                        "mappings": [
+                            {
+                                "value": "0",
+                                "newvalue": "Falha"
+                            },
+                            {
+                                "value": "1",
+                                "newvalue": "OK"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "aa355dcf9e27416797cd34eef9fc316f",
+                        "name": "status",
+                        "mappings": [
+                            {
+                                "value": "1",
+                                "newvalue": "up"
+                            },
+                            {
+                                "value": "2",
+                                "newvalue": "down"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "7611615b9e404b749471266e05cd7990",
+                        "name": "TonerStatus",
+                        "mappings": [
+                            {
+                                "type": "GREATER_OR_EQUAL",
+                                "value": "20",
+                                "newvalue": "OK"
+                            },
+                            {
+                                "type": "LESS_OR_EQUAL",
+                                "value": "20",
+                                "newvalue": "Baixo"
+                            },
+                            {
+                                "type": "LESS_OR_EQUAL",
+                                "value": "5",
+                                "newvalue": "Cr\u00edtico"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "triggers": [
+            {
+                "uuid": "e11f5a731f8c407ea5aaa9fb7a9d24c7",
+                "expression": "last(/Brother/icmpping)=1 and nodata(/Brother/sys.uptime,3m)=1",
+                "name": "Impressora ligada, mas n\u00e3o responde SNMP",
+                "priority": "HIGH"
+            }
+        ],
+        "graphs": [
+            {
+                "uuid": "7b0206b4f5fc49d6b5f50955b33e71de",
+                "name": "N\u00edvel de toner e drum",
+                "graph_items": [
+                    {
+                        "color": "199C0D",
+                        "calc_fnc": "ALL",
+                        "item": {
+                            "host": "Brother",
+                            "key": "drum.restante.percent"
+                        }
+                    },
+                    {
+                        "sortorder": "1",
+                        "color": "F63100",
+                        "calc_fnc": "ALL",
+                        "item": {
+                            "host": "Brother",
+                            "key": "toner.level.raw"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}
