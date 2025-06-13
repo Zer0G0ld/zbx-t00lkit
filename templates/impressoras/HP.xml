@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>7.0</version>
+    <template_groups>
+        <template_group>
+            <uuid>aa21e87878f2482090ab6f9a6126cce0</uuid>
+            <name>CPD</name>
+        </template_group>
+    </template_groups>
+    <templates>
+        <template>
+            <uuid>1e906e716bd14803b7da8504f3d5c9db</uuid>
+            <template>HP</template>
+            <name>HP</name>
+            <groups>
+                <group>
+                    <name>CPD</name>
+                </group>
+            </groups>
+            <items>
+                <item>
+                    <uuid>0370979490714e9985589cac326b51a3</uuid>
+                    <name>Contador RX (pacotes)</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.2.2.1.11.1</snmp_oid>
+                    <key>bytes.conta.pac.rx</key>
+                    <description>Pacotes recebidos pela interface 1</description>
+                </item>
+                <item>
+                    <uuid>0eca2d26d8ec4c869ad47448e780604c</uuid>
+                    <name>Contador TX (pacotes)</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.2.2.1.17.1</snmp_oid>
+                    <key>bytes.conta.pac.tx</key>
+                    <units>B</units>
+                    <description>Pacotes enviados pela interface 1</description>
+                </item>
+                <item>
+                    <uuid>f0e1acbd2f64406c8d63b345e37f22a2</uuid>
+                    <name>Contador RX (bytes)</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.2.2.1.10.1</snmp_oid>
+                    <key>bytes.conta.rx</key>
+                    <units>B</units>
+                    <description>Bytes recebidos pela interface 1</description>
+                </item>
+                <item>
+                    <uuid>43ce0ff4947547cdb9845b33f491c8ae</uuid>
+                    <name>Contador TX (bytes)</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.2.2.1.16.1</snmp_oid>
+                    <key>bytes.conta.tx</key>
+                    <units>b</units>
+                    <description>Bytes enviados pela interface 1</description>
+                </item>
+                <item>
+                    <uuid>4adbcdc98016482a9e6f4f3a354712ed</uuid>
+                    <name>Nome do dispositivo</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.1.5.0</snmp_oid>
+                    <key>disp.name</key>
+                    <delay>1h</delay>
+                    <value_type>TEXT</value_type>
+                    <trends>0</trends>
+                </item>
+                <item>
+                    <uuid>d97c2988f09c48ebb9552d9a038bdd4a</uuid>
+                    <name>Descrição da interface</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.2.2.1.2.1</snmp_oid>
+                    <key>interface.descr</key>
+                    <value_type>TEXT</value_type>
+                    <trends>0</trends>
+                    <description>Interface wireless</description>
+                </item>
+                <item>
+                    <uuid>a56ed6b9b2cf42a69af2e9e1e85d0280</uuid>
+                    <name>Localização</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.1.6.0</snmp_oid>
+                    <key>local</key>
+                    <delay>1h</delay>
+                    <value_type>TEXT</value_type>
+                    <trends>0</trends>
+                </item>
+                <item>
+                    <uuid>2a1f00f6904246c394cfd2345cf9dae2</uuid>
+                    <name>MAC address da interface</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.2.2.1.6.1</snmp_oid>
+                    <key>sys.mac</key>
+                    <delay>1h</delay>
+                    <value_type>TEXT</value_type>
+                    <trends>0</trends>
+                </item>
+                <item>
+                    <uuid>2d08a9f1d9df4649936d8559e3015c0b</uuid>
+                    <name>Tempo de atividade</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>.1.3.6.1.2.1.1.3.0</snmp_oid>
+                    <key>sys.uptime</key>
+                    <units>s</units>
+                </item>
+            </items>
+        </template>
+    </templates>
+</zabbix_export>
