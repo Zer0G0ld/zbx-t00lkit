@@ -1,0 +1,501 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+    - uuid: aa21e87878f2482090ab6f9a6126cce0
+      name: CPD
+  templates:
+    - uuid: 4b63dac08dea4ca38b0b8ceb8863201c
+      template: 'Zyxel SNMP'
+      name: 'Zyxel SNMP'
+      groups:
+        - name: CPD
+      items:
+        - uuid: 2db76b7386bf40c7acc3a865e4e05d77
+          name: 'Número total de conexões VPN​'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.890.1.6.22.2.5.1
+          key: conex.vpn
+          delay: 10s
+        - uuid: 28b67c0384d34eeca05bf5c7e6158943
+          name: 'Número de conexões VPN ativas ​'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.890.1.6.22.2.5.2
+          key: conex.vpn.on
+          delay: 10s
+          triggers:
+            - uuid: d0c0fd8677664d9bb1cb3635c2bcfcad
+              expression: 'last(/Zyxel SNMP/conex.vpn.on)>=50'
+              name: 'Número de conexões VPN ativas acima do esperado'
+              priority: DISASTER
+              description: 'Se o número de conexões VPN ativas ultrapassar 50, pode indicar um uso anormal.'
+        - uuid: 258c3ec390e04201ab2f780c410dc59a
+          name: 'Uso atual da CPU do sistema'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.890.1.6.22.1.1.0
+          key: cpu.util
+          units: '%'
+          triggers:
+            - uuid: d307caa2338145929fe4519d36f8311f
+              expression: 'last(/Zyxel SNMP/cpu.util)>=90'
+              name: 'Uso elevado da CPU'
+              priority: HIGH
+              description: 'Dispara um alerta se o uso da CPU ultrapassar 90%.'
+        - uuid: 53083da6496843b5868843cdd52a8df6
+          name: 'Uso atual da memória flash do sistema'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.890.1.6.22.1.7.0
+          key: flash.memo
+          delay: 10s
+        - uuid: 6a6ce34e69c643c0b8346cf1ddae9cce
+          name: 'Throughput total de VPN IPSec'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.890.1.6.22.2.1.0
+          key: ipsec.vpn
+          delay: 10s
+        - uuid: 92fd2162894b4522972129d0f7f497ac
+          name: 'Nome do produto'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.890.1.15.3.1.11.0
+          key: name.product
+          delay: 60m
+          value_type: CHAR
+          trends: '0'
+        - uuid: 6366b8dd47134991877b20e7f7f25af4
+          name: 'Uso atual de RAM do sistema'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.890.1.6.22.1.2.0
+          key: ram.sys
+          units: '%'
+          triggers:
+            - uuid: 094e7accb1314396a3ea690627c5f356
+              expression: 'last(/Zyxel SNMP/ram.sys)>=85'
+              name: 'Uso elevado de RAM'
+              priority: HIGH
+              description: 'Dispara um alerta se o uso de RAM ultrapassar 85%.'
+        - uuid: 2d1e2b8942d440d78eb2f9e86932a789
+          name: 'Número de série​'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.890.1.15.3.1.12.0
+          key: seial.number
+          delay: 60m
+          value_type: CHAR
+          trends: '0'
+        - uuid: eff9c1cc43504ce58bce2d3441102078
+          name: 'Número atual de sessões do sistema'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.890.1.6.22.1.6.0
+          key: sesions.sys
+        - uuid: b3c912fcb5624958861c4fbd733e186e
+          name: 'Bytes Recebidos - eth1'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.2.2.1.10.10
+          key: snmp.rx.eth1
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '8.0E-6'
+          triggers:
+            - uuid: 01151c339483442fb089aa69d1b442f0
+              expression: 'last(/Zyxel SNMP/snmp.rx.eth1)>100000000'
+              name: 'A interface "eth1" está recebendo mais de 100 Mbps'
+              priority: HIGH
+              description: 'A interface está recebendo mais de 100 Mbps'
+            - uuid: afff4b134a964b0796aca1950097f264
+              expression: 'last(/Zyxel SNMP/snmp.rx.eth1)=0'
+              name: 'A interface "eth1" não recebeu nenhum byte'
+              priority: DISASTER
+              description: 'A interface não recebeu nenhum byte, indicando possível queda.'
+        - uuid: 1524ed1fb4774332b16a1abcc16ac7c9
+          name: 'Bytes Recebidos - eth2'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.2.2.1.10.11
+          key: snmp.rx.eth2
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '8.0E-6'
+          triggers:
+            - uuid: cad554f7a1024a4a91b29d1e685534b9
+              expression: 'last(/Zyxel SNMP/snmp.rx.eth2)>100000000'
+              name: 'A interface "eth2" está recebendo mais de 100 Mbps'
+              priority: HIGH
+              description: 'A interface está recebendo mais de 100 Mbps'
+            - uuid: f2b8b26a3ac64ae49cd227aee21abd2b
+              expression: 'last(/Zyxel SNMP/snmp.rx.eth2)=0'
+              name: 'A interface "eth2" não recebeu nenhum byte'
+              priority: DISASTER
+              description: 'A interface não recebeu nenhum byte, indicando possível queda.'
+        - uuid: 788a2e20f138404cb9ff9168887532f6
+          name: 'Bytes Recebidos - eth3'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.2.2.1.10.12
+          key: snmp.rx.eth3
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '8.0E-6'
+          triggers:
+            - uuid: 7b304046d3a141ebaa0c2bf84a523e89
+              expression: 'last(/Zyxel SNMP/snmp.rx.eth3)>100000000'
+              name: 'A interface "eth3" está recebendo mais de 100 Mbps'
+              priority: HIGH
+              description: 'A interface está recebendo mais de 100 Mbps'
+            - uuid: 2d98f335105549859764d6d9c9cf5014
+              expression: 'last(/Zyxel SNMP/snmp.rx.eth3)=0'
+              name: 'A interface "eth3" não recebeu nenhum byte'
+              priority: DISASTER
+              description: 'A interface não recebeu nenhum byte, indicando possível queda.'
+        - uuid: 1f031fd103284588a00d99c9285e23e6
+          name: 'Bytes Recebidos - eth4'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.2.2.1.10.13
+          key: snmp.rx.eth4
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '8.0E-6'
+          triggers:
+            - uuid: 75b221f2490d4464860aad07b9acc98c
+              expression: 'last(/Zyxel SNMP/snmp.rx.eth4)>100000000'
+              name: 'A interface "eth4" está recebendo mais de 100 Mbps'
+              priority: HIGH
+              description: 'A interface está recebendo mais de 100 Mbps'
+            - uuid: 8f8f2b44babe4d0d9beb170a7b499a15
+              expression: 'last(/Zyxel SNMP/snmp.rx.eth4)=0'
+              name: 'A interface "eth4" não recebeu nenhum byte'
+              priority: DISASTER
+              description: 'A interface não recebeu nenhum byte, indicando possível queda.'
+        - uuid: fb00e7918638453eb2da12b619c6179c
+          name: 'Bytes Recebidos - eth5'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.2.2.1.10.14
+          key: snmp.rx.eth5
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '8.0E-6'
+          triggers:
+            - uuid: c44f20a47d1e42aa9d094d7cf2679fc0
+              expression: 'last(/Zyxel SNMP/snmp.rx.eth5)>100000000'
+              name: 'A interface "eth5" está recebendo mais de 100 Mbps'
+              priority: HIGH
+              description: 'A interface está recebendo mais de 100 Mbps'
+        - uuid: 37042e2d3cd14ac798bdb69bf87ccbee
+          name: 'Bytes Recebidos - eth6'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.2.2.1.10.15
+          key: snmp.rx.eth6
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '8.0E-6'
+          triggers:
+            - uuid: 37d5a3f266d24cd5a046486c854a33d2
+              expression: 'last(/Zyxel SNMP/snmp.rx.eth6)>100000000'
+              name: 'A interface "eth6" está recebendo mais de 100 Mbps'
+              priority: HIGH
+              description: 'A interface está recebendo mais de 100 Mbps'
+            - uuid: 2810c1cc40514d4eabbea73487e90135
+              expression: 'last(/Zyxel SNMP/snmp.rx.eth6)=0'
+              name: 'A interface "eth6" não recebeu nenhum byte'
+              priority: DISASTER
+              description: 'A interface não recebeu nenhum byte, indicando possível queda.'
+        - uuid: 9acb01803e344cf58a60a7c29a2f1ac8
+          name: 'Bytes Recebidos - eth7'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.2.2.1.10.16
+          key: snmp.rx.eth7
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '8.0E-6'
+          triggers:
+            - uuid: a4c8bcf653694ddaba43d8fb8802b1d0
+              expression: 'last(/Zyxel SNMP/snmp.rx.eth7)>100000000'
+              name: 'A interface "eth7" está recebendo mais de 100 Mbps'
+              priority: HIGH
+              description: 'A interface está recebendo mais de 100 Mbps'
+            - uuid: 8cfd4613105b42e49983a3476c4f55f3
+              expression: 'last(/Zyxel SNMP/snmp.rx.eth7)=0'
+              name: 'A interface "eth7" não recebeu nenhum byte'
+              priority: DISASTER
+              description: 'A interface não recebeu nenhum byte, indicando possível queda.'
+        - uuid: 0ffdc92a9d6842e88dac2678ea0295ef
+          name: 'Bytes Recebidos - vlan2'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.2.2.1.10.18
+          key: snmp.rx.vlan2
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '8.0E-6'
+          triggers:
+            - uuid: 9ce4b10062da4768b0d492070d798d0d
+              expression: 'last(/Zyxel SNMP/snmp.rx.vlan2)>100000000'
+              name: 'A interface "vlan2" está recebendo mais de 100 Mbps'
+              priority: HIGH
+              description: 'A interface está recebendo mais de 100 Mbps'
+            - uuid: 2b50d1ab21114bfaac3b9a00491f1f5a
+              expression: 'last(/Zyxel SNMP/snmp.rx.vlan2)=0'
+              name: 'A interface "vlan2" não recebeu nenhum byte'
+              priority: DISASTER
+              description: 'A interface não recebeu nenhum byte, indicando possível queda.'
+        - uuid: a1e9e014517649a3a3929c2372bbe89a
+          name: 'Bytes Transmitidos - eth1'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.2.2.1.16.10
+          key: snmp.tx.eth1
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '8.0E-6'
+          triggers:
+            - uuid: 987fc2f546d24d6497ca3bf777359040
+              expression: 'last(/Zyxel SNMP/snmp.tx.eth1)>100000000'
+              name: 'A interface "eth1" está transmitindo mais de 100 Mbps'
+              priority: HIGH
+              description: 'A interface está transmitindo mais de 100 Mbps'
+            - uuid: 6eb6fb93d953444cbb4c6aa8dccc4b25
+              expression: 'last(/Zyxel SNMP/snmp.tx.eth1)=0'
+              name: 'A interface "eth1" não transmitiu nenhum byte'
+              priority: DISASTER
+              description: 'A interface não transmitiu nenhum byte, indicando possível queda.'
+        - uuid: 64494fffa9cb438a9a6b9d93a6a58551
+          name: 'Bytes Transmitidos - eth2'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.2.2.1.16.11
+          key: snmp.tx.eth2
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '8.0E-6'
+          triggers:
+            - uuid: 9d94af3e636c426a8281b335695f1782
+              expression: 'last(/Zyxel SNMP/snmp.tx.eth2)>100000000'
+              name: 'A interface "eth2" está transmitindo mais de 100 Mbps'
+              priority: HIGH
+              description: 'A interface está transmitindo mais de 100 Mbps'
+            - uuid: 7635a6af303f462385651f1a0c58688d
+              expression: 'last(/Zyxel SNMP/snmp.tx.eth2)=0'
+              name: 'A interface "eth2" não transmitiu nenhum byte'
+              priority: DISASTER
+              description: 'A interface não transmitiu nenhum byte, indicando possível queda.'
+        - uuid: c9fe9438131e4ed48dcc8025dc33ab54
+          name: 'Bytes Transmitidos - eth3'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.2.2.1.16.12
+          key: snmp.tx.eth3
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '8.0E-6'
+          triggers:
+            - uuid: 08faecaea1a9479d8e2aa02fa22e61a9
+              expression: 'last(/Zyxel SNMP/snmp.tx.eth3)>100000000'
+              name: 'A interface "eth3" está transmitindo mais de 100 Mbps'
+              priority: HIGH
+              description: 'A interface está transmitindo mais de 100 Mbps'
+            - uuid: c0b8428430794f40813767d4e53e0dbf
+              expression: 'last(/Zyxel SNMP/snmp.tx.eth3)=0'
+              name: 'A interface "eth3" não transmitiu nenhum byte'
+              priority: DISASTER
+              description: 'A interface não transmitiu nenhum byte, indicando possível queda.'
+        - uuid: 060a47427ec64adc93e11a85d693b9c0
+          name: 'Bytes Transmitidos - eth4'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.2.2.1.16.13
+          key: snmp.tx.eth4
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '8.0E-6'
+          triggers:
+            - uuid: decac4f17fc2454c8385a8143977354f
+              expression: 'last(/Zyxel SNMP/snmp.tx.eth4)>100000000'
+              name: 'A interface "eth4" está transmitindo mais de 100 Mbps'
+              priority: HIGH
+              description: 'A interface está transmitindo mais de 100 Mbps'
+        - uuid: 3037798161c345acb8ff931555df8691
+          name: 'Bytes Transmitidos - eth5'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.2.2.1.16.14
+          key: snmp.tx.eth5
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '8.0E-6'
+          triggers:
+            - uuid: 72b0e1eb4a9a43caadf3ec4cd01ae3ac
+              expression: 'last(/Zyxel SNMP/snmp.tx.eth5)>100000000'
+              name: 'A interface "eth5" está transmitindo mais de 100 Mbps'
+              priority: HIGH
+              description: 'A interface está transmitindo mais de 100 Mbps'
+            - uuid: efa7637d461545ba8935b6e174a292d7
+              expression: 'last(/Zyxel SNMP/snmp.tx.eth5)=0'
+              name: 'A interface "eth5" não transmitiu nenhum byte'
+              priority: DISASTER
+              description: 'A interface não transmitiu nenhum byte, indicando possível queda.'
+        - uuid: e9fb03eb2fed4f7b81268290dc9f089f
+          name: 'Bytes Transmitidos - eth6'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.2.2.1.16.15
+          key: snmp.tx.eth6
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '8.0E-6'
+          triggers:
+            - uuid: b58c24bdec19462ebdf9c38633dee34f
+              expression: 'last(/Zyxel SNMP/snmp.tx.eth6)>100000000'
+              name: 'A interface "eth6" está transmitindo mais de 100 Mbps'
+              priority: HIGH
+              description: 'A interface está transmitindo mais de 100 Mbps'
+            - uuid: 24a8ca5a25824be3984e69189ce4e1a0
+              expression: 'last(/Zyxel SNMP/snmp.tx.eth6)=0'
+              name: 'A interface "eth6" não transmitiu nenhum byte'
+              priority: DISASTER
+              description: 'A interface não transmitiu nenhum byte, indicando possível queda.'
+        - uuid: cb160ca61f4242b6849f91c64cc1394c
+          name: 'Bytes Transmitidos - eth7'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.2.2.1.16.16
+          key: snmp.tx.eth7
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '8.0E-6'
+          triggers:
+            - uuid: 86879fb44cdc46008eef49c2d578aa2e
+              expression: 'last(/Zyxel SNMP/snmp.tx.eth7)>100000000'
+              name: 'A interface "eth7" está transmitindo mais de 100 Mbps'
+              priority: HIGH
+              description: 'A interface está transmitindo mais de 100 Mbps'
+        - uuid: 982980624746458ea2a2eeac5f666720
+          name: 'Bytes Transmitidos - vlan2'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.2.2.1.16.18
+          key: snmp.tx.vlan2
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '8.0E-6'
+          triggers:
+            - uuid: 3b3a4c06e8bf45f8841d994f77fa5fc1
+              expression: 'last(/Zyxel SNMP/snmp.tx.vlan2)>100000000'
+              name: 'A interface "vlan2" está transmitindo mais de 100 Mbps'
+              priority: HIGH
+              description: 'A interface está transmitindo mais de 100 Mbps'
+            - uuid: d6ed5b81b03c469e9151d068098dcec8
+              expression: 'last(/Zyxel SNMP/snmp.tx.vlan2)=0'
+              name: 'A interface "vlan2" não transmitiu nenhum byte'
+              priority: DISASTER
+              description: 'A interface não transmitiu nenhum byte, indicando possível queda.'
+        - uuid: 32ee0474d7ec4567b39e3c338881a067
+          name: 'Verificar se o processo dhcpcd_request está em execução'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.4.2.1.2.6778
+          key: 'snmpwalk["192.168.8.5", ".1.3.6.1.2.1.25.4.2.1.2.6778"]'
+          value_type: TEXT
+          trends: '0'
+        - uuid: dee0ae89ce984ebb947e4ab04ef36e17
+          name: 'Verificar o status do serviço DHCP (dhcp_info).'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.4.2.1.2.11575
+          key: 'snmpwalk["192.168.8.5", ".1.3.6.1.2.1.25.4.2.1.2.11575"]'
+          value_type: TEXT
+          trends: '0'
+        - uuid: 98965b0c857e47229ff47abe140802e9
+          name: 'Verificar se o processo dhcpd (servidor DHCP) está em execução'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.4.2.1.2.25334
+          key: 'snmpwalk["192.168.8.5", ".1.3.6.1.2.1.25.4.2.1.2.25334"]'
+          value_type: TEXT
+          trends: '0'
+        - uuid: ed7fb54ec93c42778bc0228ee7b6aa48
+          name: 'Verificar o comando utilizado para o processo dhcpd'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.4.2.1.4.25334
+          key: 'snmpwalk["192.168.8.5", ".1.3.6.1.2.1.25.4.2.1.4.25334"]'
+          value_type: TEXT
+          trends: '0'
+        - uuid: e79d7842f6b647a0b28261bbb8798db7
+          name: 'Verificar os parâmetros usados pelo dhcpd'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.4.2.1.5.25334
+          key: 'snmpwalk["192.168.8.5", ".1.3.6.1.2.1.25.4.2.1.5.25334"]'
+          value_type: TEXT
+          trends: '0'
+        - uuid: 411cf1596da94436a107723d5337dd00
+          name: 'Estado da Interface Acess_Matriz'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.4.1.890.1.6.22.2.4.1.2.1.0
+          key: 'snmpwalk["iso.3.6.1.4.1.890.1.6.22.2.4.1.2.1.0"]'
+          value_type: TEXT
+          trends: '0'
+        - uuid: eb6ac62158e9492ba3eef4b99e130a7e
+          name: 'Versão do Firmware'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.4.1.890.1.15.3.1.6.0
+          key: 'snmpwalk["iso.3.6.1.4.1.890.1.15.3.1.6.0"]'
+          value_type: CHAR
+          trends: '0'
+        - uuid: 621e08cb123c4bc8bc2964a9b9b04c99
+          name: Localização
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.4.1.890.1.15.3.1.16.0
+          key: 'snmpwalk["iso.3.6.1.4.1.890.1.15.3.1.16.0"]'
+          value_type: TEXT
+          trends: '0'
+        - uuid: ff744edbd4754ff08539657e92446f1b
+          name: 'Estado do Ventilador 1'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.4.1.890.1.15.3.26.1.1.1.2.1
+          key: 'snmpwalk["iso.3.6.1.4.1.890.1.15.3.26.1.1.1.2.1"]'
+          value_type: TEXT
+          trends: '0'
+        - uuid: a3b8ed85ec414085b79338e48768c932
+          name: 'Estado do Ventilador 2'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.4.1.890.1.15.3.26.1.1.1.2.2
+          key: 'snmpwalk["iso.3.6.1.4.1.890.1.15.3.26.1.1.1.2.2"]'
+          value_type: TEXT
+          trends: '0'
+        - uuid: 5f033269e90d4563aa5c73d44f8970a5
+          name: 'Temperatura (Fan 1)'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.4.1.890.1.15.3.26.1.2.1.3.1
+          key: 'snmpwalk["iso.3.6.1.4.1.890.1.15.3.26.1.2.1.3.1"]'
+          units: °C
+        - uuid: c7649f8579d44f2b8dca2d1caa73afd6
+          name: 'Temperatura (Fan 2)'
+          type: SNMP_AGENT
+          snmp_oid: iso.3.6.1.4.1.890.1.15.3.26.1.2.1.3.2
+          key: 'snmpwalk["iso.3.6.1.4.1.890.1.15.3.26.1.2.1.3.2"]'
+          units: °C
+        - uuid: e9a3b701884e44749309670886963ac3
+          name: 'Tempo de atividade do sistema'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.1.3.0
+          key: sys.uptime
+          triggers:
+            - uuid: d7b732a2c1164782bb708613a6634c4f
+              expression: 'last(/Zyxel SNMP/sys.uptime)<=300'
+              name: 'Tempo de atividade do sistema muito baixo (possível reinicialização)'
+              priority: HIGH
+              description: 'Se o tempo de atividade for menor que 300 segundos (5 minutos), significa que o firewall foi reiniciado recentemente.'
