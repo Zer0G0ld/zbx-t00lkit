@@ -1,4 +1,4 @@
-# zabbix-monitoramento-templates
+# zbx-t00lkit
 
 Repositório para armazenar e versionar templates de monitoramento para Zabbix.  
 Aqui você encontra templates organizados por tipo de dispositivo para facilitar a importação e manutenção.
@@ -15,7 +15,7 @@ O objetivo é ajudar a comunidade com templates úteis e fáceis de adaptar.
 ## Estrutura do repositório
 
 ```bash
-zabbix-monitoramento-templates/
+zbx-t00lkit/
 ├── LICENSE
 ├── README.md
 ├── scripts/
@@ -46,13 +46,13 @@ Cada template está disponível nos seguintes formatos para facilitar a importa�
 
 1. Clone o repositório:
    ```bash
-   git clone https://github.com/Zer0G0ld/zabbix-monitoramento-templates.git
+   git clone https://github.com/Zer0G0ld/zbx-t00lkit.git
    ```
 
 3. Navegue até o template desejado, por exemplo:
 
    ```bash
-   cd zabbix-monitoramento-templates/templates/impressoras/Brother.json
+   cd zbx-t00lkit/templates/impressoras/Brother.json
    ```
 4. Importe o template no Zabbix via interface web (Dados Coletados > Templates > Importar).
 5. Ajuste os templates conforme sua infraestrutura.
