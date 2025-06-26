@@ -18,6 +18,10 @@ zabbix_export:
             - tag: component
               value: system
           triggers:
+            - uuid: 86f324d1e0c449b0937e7c278ef517f5
+              expression: 'last(/Windows Agent/agent.ping)=0'
+              name: 'Agente não responde'
+              priority: AVERAGE
             - uuid: a22011dd4177476ab67f99235720281c
               expression: 'last(/Windows Agent/agent.ping)<>0'
               name: 'Serviço Zabbix Agent está parado'
@@ -117,6 +121,11 @@ zabbix_export:
           tags:
             - tag: component
               value: os
+          triggers:
+            - uuid: 326cce9078934db3ae99c9020be6e195
+              expression: 'last(/Windows Agent/proc.num[])>=100'
+              name: 'Numero de Processos passou de 100'
+              priority: AVERAGE
         - uuid: e9f90a7a24254a0aa209ef1cd6c28894
           name: 'CPU utilization'
           key: system.cpu.util
@@ -209,7 +218,7 @@ zabbix_export:
         - uuid: e8e6f4775d0c43f7a8a451797164509c
           name: Uptime
           key: system.uptime
-          delay: 30s
+          delay: 10s
           trends: '0'
           units: uptime
           description: 'The system uptime expressed in the following format: "N days, hh:mm:ss".'
@@ -217,8 +226,12 @@ zabbix_export:
             - tag: component
               value: system
           triggers:
+            - uuid: aa8898f2786a4a9aacc846c0534efe2b
+              expression: 'last(/Windows Agent/system.uptime)<300'
+              name: 'Ativo a 5min'
+              priority: INFO
             - uuid: 7f0b9c8366d64400a71df385b6f71544
-              expression: 'last(/Windows Agent/system.uptime)<600'
+              expression: 'change(/Windows Agent/system.uptime)>0 and last(/Windows Agent/system.uptime)<600'
               name: 'Sistema reiniciado (uptime menor que 10 min)'
               priority: INFO
         - uuid: 0f90b20a4af94d7989234d306dc824ac
@@ -274,3 +287,29 @@ zabbix_export:
           tags:
             - tag: component
               value: cpu
+  graphs:
+    - uuid: fcc31bc01ddc47e3b09c59bc8c170a9a
+      name: 'Numero de Processos'
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: 0040FF
+          calc_fnc: ALL
+          item:
+            host: 'Windows Agent'
+            key: 'proc.num[]'
+    - uuid: 76bb0c6092c148eaa027fd404c9398e3
+      name: 'Uso da CPU e da Memoria'
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: 199C0D
+          calc_fnc: ALL
+          item:
+            host: 'Windows Agent'
+            key: system.cpu.util
+        - sortorder: '1'
+          drawtype: GRADIENT_LINE
+          color: F63100
+          calc_fnc: ALL
+          item:
+            host: 'Windows Agent'
+            key: vm.memory.util

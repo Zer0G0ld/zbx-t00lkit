@@ -31,6 +31,12 @@
                     </tags>
                     <triggers>
                         <trigger>
+                            <uuid>86f324d1e0c449b0937e7c278ef517f5</uuid>
+                            <expression>last(/Windows Agent/agent.ping)=0</expression>
+                            <name>Agente não responde</name>
+                            <priority>AVERAGE</priority>
+                        </trigger>
+                        <trigger>
                             <uuid>a22011dd4177476ab67f99235720281c</uuid>
                             <expression>last(/Windows Agent/agent.ping)&lt;&gt;0</expression>
                             <name>Serviço Zabbix Agent está parado</name>
@@ -187,6 +193,14 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                             <value>os</value>
                         </tag>
                     </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>326cce9078934db3ae99c9020be6e195</uuid>
+                            <expression>last(/Windows Agent/proc.num[])&gt;=100</expression>
+                            <name>Numero de Processos passou de 100</name>
+                            <priority>AVERAGE</priority>
+                        </trigger>
+                    </triggers>
                 </item>
                 <item>
                     <uuid>e9f90a7a24254a0aa209ef1cd6c28894</uuid>
@@ -337,7 +351,7 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <uuid>e8e6f4775d0c43f7a8a451797164509c</uuid>
                     <name>Uptime</name>
                     <key>system.uptime</key>
-                    <delay>30s</delay>
+                    <delay>10s</delay>
                     <trends>0</trends>
                     <units>uptime</units>
                     <description>The system uptime expressed in the following format: &quot;N days, hh:mm:ss&quot;.</description>
@@ -349,8 +363,14 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     </tags>
                     <triggers>
                         <trigger>
+                            <uuid>aa8898f2786a4a9aacc846c0534efe2b</uuid>
+                            <expression>last(/Windows Agent/system.uptime)&lt;300</expression>
+                            <name>Ativo a 5min</name>
+                            <priority>INFO</priority>
+                        </trigger>
+                        <trigger>
                             <uuid>7f0b9c8366d64400a71df385b6f71544</uuid>
-                            <expression>last(/Windows Agent/system.uptime)&lt;600</expression>
+                            <expression>change(/Windows Agent/system.uptime)&gt;0 and last(/Windows Agent/system.uptime)&lt;600</expression>
                             <name>Sistema reiniciado (uptime menor que 10 min)</name>
                             <priority>INFO</priority>
                         </trigger>
@@ -444,4 +464,46 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
             </items>
         </template>
     </templates>
+    <graphs>
+        <graph>
+            <uuid>fcc31bc01ddc47e3b09c59bc8c170a9a</uuid>
+            <name>Numero de Processos</name>
+            <graph_items>
+                <graph_item>
+                    <drawtype>GRADIENT_LINE</drawtype>
+                    <color>0040FF</color>
+                    <calc_fnc>ALL</calc_fnc>
+                    <item>
+                        <host>Windows Agent</host>
+                        <key>proc.num[]</key>
+                    </item>
+                </graph_item>
+            </graph_items>
+        </graph>
+        <graph>
+            <uuid>76bb0c6092c148eaa027fd404c9398e3</uuid>
+            <name>Uso da CPU e da Memoria</name>
+            <graph_items>
+                <graph_item>
+                    <drawtype>GRADIENT_LINE</drawtype>
+                    <color>199C0D</color>
+                    <calc_fnc>ALL</calc_fnc>
+                    <item>
+                        <host>Windows Agent</host>
+                        <key>system.cpu.util</key>
+                    </item>
+                </graph_item>
+                <graph_item>
+                    <sortorder>1</sortorder>
+                    <drawtype>GRADIENT_LINE</drawtype>
+                    <color>F63100</color>
+                    <calc_fnc>ALL</calc_fnc>
+                    <item>
+                        <host>Windows Agent</host>
+                        <key>vm.memory.util</key>
+                    </item>
+                </graph_item>
+            </graph_items>
+        </graph>
+    </graphs>
 </zabbix_export>
