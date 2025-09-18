@@ -3,12 +3,15 @@ zabbix_export:
   template_groups:
     - uuid: aa21e87878f2482090ab6f9a6126cce0
       name: CPD
+    - uuid: cf5013a89dbf4606a844226b31ecbaba
+      name: Infraestrutura
   templates:
     - uuid: 03ccf8ae55c94720ab919c0567a99237
       template: 'QNAP TS-x73A'
       name: 'QNAP TS-x73A'
       groups:
         - name: CPD
+        - name: Infraestrutura
       items:
         - uuid: ac76ec2906f641fca6d33befc585a891
           name: 'Espaço livre no disco /share/CACHEDEV1_DATA'
@@ -35,3 +38,8 @@ zabbix_export:
           value_type: FLOAT
           units: '%'
           params: '(last(//hrStorageUsed.44) / last(//hrStorageSize)) * 100'
+      tags:
+        - tag: class
+          value: infra
+        - tag: target
+          value: storage

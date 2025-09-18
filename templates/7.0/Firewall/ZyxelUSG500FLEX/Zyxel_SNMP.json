@@ -5,6 +5,10 @@
             {
                 "uuid": "aa21e87878f2482090ab6f9a6126cce0",
                 "name": "CPD"
+            },
+            {
+                "uuid": "cf5013a89dbf4606a844226b31ecbaba",
+                "name": "Infraestrutura"
             }
         ],
         "templates": [
@@ -15,6 +19,9 @@
                 "groups": [
                     {
                         "name": "CPD"
+                    },
+                    {
+                        "name": "Infraestrutura"
                     }
                 ],
                 "items": [
@@ -732,6 +739,16 @@
                                 "description": "Se o tempo de atividade for menor que 300 segundos (5 minutos), significa que o firewall foi reiniciado recentemente."
                             }
                         ]
+                    }
+                ],
+                "tags": [
+                    {
+                        "tag": "class",
+                        "value": "infra"
+                    },
+                    {
+                        "tag": "target'",
+                        "value": "sec"
                     }
                 ]
             }

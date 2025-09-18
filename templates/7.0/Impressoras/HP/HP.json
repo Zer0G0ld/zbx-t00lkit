@@ -3,8 +3,8 @@
         "version": "7.0",
         "template_groups": [
             {
-                "uuid": "aa21e87878f2482090ab6f9a6126cce0",
-                "name": "CPD"
+                "uuid": "00546c90680a47218e0b192c55e9fc94",
+                "name": "Impressora"
             }
         ],
         "templates": [
@@ -14,7 +14,7 @@
                 "name": "HP",
                 "groups": [
                     {
-                        "name": "CPD"
+                        "name": "Impressora"
                     }
                 ],
                 "items": [
@@ -100,6 +100,16 @@
                         "snmp_oid": ".1.3.6.1.2.1.1.3.0",
                         "key": "sys.uptime",
                         "units": "s"
+                    }
+                ],
+                "tags": [
+                    {
+                        "tag": "class",
+                        "value": "utilidade"
+                    },
+                    {
+                        "tag": "target",
+                        "value": "impressora"
                     }
                 ]
             }

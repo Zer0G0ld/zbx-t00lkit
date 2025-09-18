@@ -3,12 +3,15 @@ zabbix_export:
   template_groups:
     - uuid: aa21e87878f2482090ab6f9a6126cce0
       name: CPD
+    - uuid: cf5013a89dbf4606a844226b31ecbaba
+      name: Infraestrutura
   templates:
     - uuid: 4b63dac08dea4ca38b0b8ceb8863201c
       template: 'Zyxel SNMP'
       name: 'Zyxel SNMP'
       groups:
         - name: CPD
+        - name: Infraestrutura
       items:
         - uuid: 2db76b7386bf40c7acc3a865e4e05d77
           name: 'Número total de conexões VPN​'
@@ -499,3 +502,8 @@ zabbix_export:
               name: 'Tempo de atividade do sistema muito baixo (possível reinicialização)'
               priority: HIGH
               description: 'Se o tempo de atividade for menor que 300 segundos (5 minutos), significa que o firewall foi reiniciado recentemente.'
+      tags:
+        - tag: class
+          value: infra
+        - tag: 'target'''
+          value: sec

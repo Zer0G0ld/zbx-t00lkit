@@ -3,8 +3,8 @@
     <version>7.0</version>
     <template_groups>
         <template_group>
-            <uuid>80ca99c96e514068a948a41b1eaf9101</uuid>
-            <name>Windows</name>
+            <uuid>1b51b0147ea64b04b3f2c0edbc9fc8c0</uuid>
+            <name>OS</name>
         </template_group>
     </template_groups>
     <templates>
@@ -12,9 +12,10 @@
             <uuid>d29b468371734516b44ff67a2718653d</uuid>
             <template>Windows Agent</template>
             <name>Windows Agent</name>
+            <description>Modelo para Windows. Requer o agente Zabbix 7.0 ou superior.</description>
             <groups>
                 <group>
-                    <name>Windows</name>
+                    <name>OS</name>
                 </group>
             </groups>
             <items>
@@ -35,6 +36,12 @@
                             <expression>last(/Windows Agent/agent.ping)=0</expression>
                             <name>Agente não responde</name>
                             <priority>AVERAGE</priority>
+                        </trigger>
+                        <trigger>
+                            <uuid>6785dd8382104468b0a15dfd5c48a063</uuid>
+                            <expression>last(/Windows Agent/agent.ping)=0</expression>
+                            <name>Agent ping Teste 1</name>
+                            <priority>DISASTER</priority>
                         </trigger>
                         <trigger>
                             <uuid>a22011dd4177476ab67f99235720281c</uuid>
@@ -462,9 +469,126 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     </tags>
                 </item>
             </items>
+            <discovery_rules>
+                <discovery_rule>
+                    <uuid>6ff4a2547a854d8fac15ce962b6c5ec2</uuid>
+                    <name>Descoberta de serviços Windows</name>
+                    <key>service.discovery</key>
+                    <delay>1h</delay>
+                    <filter>
+                        <conditions>
+                            <condition>
+                                <macro>{#SERVICE.DISPLAYNAME}</macro>
+                                <value>(?i)(Update|Telemetry)</value>
+                                <operator>NOT_MATCHES_REGEX</operator>
+                                <formulaid>A</formulaid>
+                            </condition>
+                            <condition>
+                                <macro>{#SERVICE.NAME}</macro>
+                                <value>^Zabbix</value>
+                                <formulaid>B</formulaid>
+                            </condition>
+                        </conditions>
+                    </filter>
+                </discovery_rule>
+                <discovery_rule>
+                    <uuid>339422e2f8c74e95b4c9452381aab927</uuid>
+                    <name>Descoberta de sistemas de arquivos</name>
+                    <key>vfs.fs.dependent.discovery</key>
+                    <delay>1h</delay>
+                    <filter>
+                        <conditions>
+                            <condition>
+                                <macro>{#FSTYPE}</macro>
+                                <value>CD-ROM</value>
+                                <formulaid>A</formulaid>
+                            </condition>
+                            <condition>
+                                <macro>{#FSTYPE}</macro>
+                                <value>Rede</value>
+                                <formulaid>B</formulaid>
+                            </condition>
+                        </conditions>
+                    </filter>
+                    <description>Descobre automaticamente os sistemas de arquivos montados no host e coleta dados sobre eles.</description>
+                    <lld_macro_paths>
+                        <lld_macro_path>
+                            <lld_macro>{#FSLABEL}</lld_macro>
+                            <path>$.label</path>
+                        </lld_macro_path>
+                        <lld_macro_path>
+                            <lld_macro>{#FSNAME}</lld_macro>
+                            <path>$.name</path>
+                        </lld_macro_path>
+                        <lld_macro_path>
+                            <lld_macro>{#FSTYPE}</lld_macro>
+                            <path>$.type</path>
+                        </lld_macro_path>
+                    </lld_macro_paths>
+                    <preprocessing>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <parameters>
+                                <parameter>// Recebe o JSON bruto do agente
+// Exemplo do que o vfs.fs.dependent.discovery retorna:
+// [
+//   {&quot;fsname&quot;:&quot;/&quot;,&quot;fstype&quot;:&quot;ext4&quot;,&quot;bytes&quot;:{&quot;total&quot;:500000000,&quot;used&quot;:300000000,&quot;free&quot;:200000000,&quot;pused&quot;:60}},
+//   {&quot;fsname&quot;:&quot;/home&quot;,&quot;fstype&quot;:&quot;ext4&quot;,&quot;bytes&quot;:{&quot;total&quot;:1000000000,&quot;used&quot;:400000000,&quot;free&quot;:600000000,&quot;pused&quot;:40}}
+// ]
+
+var discovered = []; // array final que será retornado para o LLD
+
+// Percorre cada filesystem retornado pelo agente
+for (var i = 0; i &lt; value.length; i++) {
+    var fs = value[i];
+
+    // Ignorar sistemas que não queremos monitorar (opcional)
+    if (fs.fstype === &quot;tmpfs&quot; || fs.fstype === &quot;devtmpfs&quot;) {
+        continue;
+    }
+
+    // Monta o objeto que o Zabbix espera
+    discovered.push({
+        &quot;{#FSNAME}&quot;: fs.fsname,
+        &quot;{#FSTYPE}&quot;: fs.fstype,
+        &quot;{#FSLABEL}&quot;: fs.fsname.replace(/\//g, &quot;_&quot;) // para criar labels válidos
+    });
+}
+
+// Retorna o array final para o Zabbix
+return JSON.stringify(discovered);</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                </discovery_rule>
+            </discovery_rules>
+            <tags>
+                <tag>
+                    <tag>class</tag>
+                    <value>os</value>
+                </tag>
+                <tag>
+                    <tag>target</tag>
+                    <value>windows</value>
+                </tag>
+            </tags>
         </template>
     </templates>
     <graphs>
+        <graph>
+            <uuid>0d152aa0b39141b6a55fb7fcead10e58</uuid>
+            <name>cpu</name>
+            <graph_items>
+                <graph_item>
+                    <color>199C0D</color>
+                    <calc_fnc>ALL</calc_fnc>
+                    <item>
+                        <host>Windows Agent</host>
+                        <key>system.cpu.util</key>
+                    </item>
+                </graph_item>
+            </graph_items>
+        </graph>
         <graph>
             <uuid>fcc31bc01ddc47e3b09c59bc8c170a9a</uuid>
             <name>Numero de Processos</name>

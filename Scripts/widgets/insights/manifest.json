@@ -1,0 +1,18 @@
+{
+    "manifest_version": 2.0,
+    "id": "ai_assistance",
+    "type": "widget",
+    "name": "Assistente de IA",
+    "namespace": "AIAssistanceNamespace",
+    "version": "1.0",
+    "author": "Zer0G0ld",
+    "description": "Widget que integra o Zabbix com a API Gemini, fornecendo insights de causas, comandos de depuração e ações preventivas diretamente no dashboard.",
+    "widget": {
+        "js_class": "WidgetAIAssistanceJs",
+        "view": "class.widget"
+    },
+    "assets": {
+        "js": ["class.widget.php.js"]
+    },
+    "homepage": "https://github.com/Zer0G0ld/zbx-t00lkit"
+}

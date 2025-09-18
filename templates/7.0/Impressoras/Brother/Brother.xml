@@ -3,8 +3,8 @@
     <version>7.0</version>
     <template_groups>
         <template_group>
-            <uuid>aa21e87878f2482090ab6f9a6126cce0</uuid>
-            <name>CPD</name>
+            <uuid>00546c90680a47218e0b192c55e9fc94</uuid>
+            <name>Impressora</name>
         </template_group>
     </template_groups>
     <templates>
@@ -14,7 +14,7 @@
             <name>Brother</name>
             <groups>
                 <group>
-                    <name>CPD</name>
+                    <name>Impressora</name>
                 </group>
             </groups>
             <items>
@@ -249,6 +249,16 @@
                     </triggers>
                 </item>
             </items>
+            <tags>
+                <tag>
+                    <tag>class</tag>
+                    <value>utilizade</value>
+                </tag>
+                <tag>
+                    <tag>target</tag>
+                    <value>impressora</value>
+                </tag>
+            </tags>
             <macros>
                 <macro>
                     <macro>{$SNMP_COMMUNITY}</macro>

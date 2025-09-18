@@ -3,8 +3,8 @@
         "version": "7.0",
         "template_groups": [
             {
-                "uuid": "80ca99c96e514068a948a41b1eaf9101",
-                "name": "Windows"
+                "uuid": "1b51b0147ea64b04b3f2c0edbc9fc8c0",
+                "name": "OS"
             }
         ],
         "templates": [
@@ -12,9 +12,10 @@
                 "uuid": "d29b468371734516b44ff67a2718653d",
                 "template": "Windows Agent",
                 "name": "Windows Agent",
+                "description": "Modelo para Windows. Requer o agente Zabbix 7.0 ou superior.",
                 "groups": [
                     {
-                        "name": "Windows"
+                        "name": "OS"
                     }
                 ],
                 "items": [
@@ -35,6 +36,12 @@
                                 "expression": "last(/Windows Agent/agent.ping)=0",
                                 "name": "Agente n\u00e3o responde",
                                 "priority": "AVERAGE"
+                            },
+                            {
+                                "uuid": "6785dd8382104468b0a15dfd5c48a063",
+                                "expression": "last(/Windows Agent/agent.ping)=0",
+                                "name": "Agent ping Teste 1",
+                                "priority": "DISASTER"
                             },
                             {
                                 "uuid": "a22011dd4177476ab67f99235720281c",
@@ -460,10 +467,100 @@
                             }
                         ]
                     }
+                ],
+                "discovery_rules": [
+                    {
+                        "uuid": "6ff4a2547a854d8fac15ce962b6c5ec2",
+                        "name": "Descoberta de servi\u00e7os Windows",
+                        "key": "service.discovery",
+                        "delay": "1h",
+                        "filter": {
+                            "conditions": [
+                                {
+                                    "macro": "{#SERVICE.DISPLAYNAME}",
+                                    "value": "(?i)(Update|Telemetry)",
+                                    "operator": "NOT_MATCHES_REGEX",
+                                    "formulaid": "A"
+                                },
+                                {
+                                    "macro": "{#SERVICE.NAME}",
+                                    "value": "^Zabbix",
+                                    "formulaid": "B"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "uuid": "339422e2f8c74e95b4c9452381aab927",
+                        "name": "Descoberta de sistemas de arquivos",
+                        "key": "vfs.fs.dependent.discovery",
+                        "delay": "1h",
+                        "filter": {
+                            "conditions": [
+                                {
+                                    "macro": "{#FSTYPE}",
+                                    "value": "CD-ROM",
+                                    "formulaid": "A"
+                                },
+                                {
+                                    "macro": "{#FSTYPE}",
+                                    "value": "Rede",
+                                    "formulaid": "B"
+                                }
+                            ]
+                        },
+                        "description": "Descobre automaticamente os sistemas de arquivos montados no host e coleta dados sobre eles.",
+                        "lld_macro_paths": [
+                            {
+                                "lld_macro": "{#FSLABEL}",
+                                "path": "$.label"
+                            },
+                            {
+                                "lld_macro": "{#FSNAME}",
+                                "path": "$.name"
+                            },
+                            {
+                                "lld_macro": "{#FSTYPE}",
+                                "path": "$.type"
+                            }
+                        ],
+                        "preprocessing": [
+                            {
+                                "type": "JAVASCRIPT",
+                                "parameters": [
+                                    "// Recebe o JSON bruto do agente\n// Exemplo do que o vfs.fs.dependent.discovery retorna:\n// [\n//   {\"fsname\":\"/\",\"fstype\":\"ext4\",\"bytes\":{\"total\":500000000,\"used\":300000000,\"free\":200000000,\"pused\":60}},\n//   {\"fsname\":\"/home\",\"fstype\":\"ext4\",\"bytes\":{\"total\":1000000000,\"used\":400000000,\"free\":600000000,\"pused\":40}}\n// ]\n\nvar discovered = []; // array final que ser\u00e1 retornado para o LLD\n\n// Percorre cada filesystem retornado pelo agente\nfor (var i = 0; i < value.length; i++) {\n    var fs = value[i];\n\n    // Ignorar sistemas que n\u00e3o queremos monitorar (opcional)\n    if (fs.fstype === \"tmpfs\" || fs.fstype === \"devtmpfs\") {\n        continue;\n    }\n\n    // Monta o objeto que o Zabbix espera\n    discovered.push({\n        \"{#FSNAME}\": fs.fsname,\n        \"{#FSTYPE}\": fs.fstype,\n        \"{#FSLABEL}\": fs.fsname.replace(/\\//g, \"_\") // para criar labels v\u00e1lidos\n    });\n}\n\n// Retorna o array final para o Zabbix\nreturn JSON.stringify(discovered);"
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "tags": [
+                    {
+                        "tag": "class",
+                        "value": "os"
+                    },
+                    {
+                        "tag": "target",
+                        "value": "windows"
+                    }
                 ]
             }
         ],
         "graphs": [
+            {
+                "uuid": "0d152aa0b39141b6a55fb7fcead10e58",
+                "name": "cpu",
+                "graph_items": [
+                    {
+                        "color": "199C0D",
+                        "calc_fnc": "ALL",
+                        "item": {
+                            "host": "Windows Agent",
+                            "key": "system.cpu.util"
+                        }
+                    }
+                ]
+            },
             {
                 "uuid": "fcc31bc01ddc47e3b09c59bc8c170a9a",
                 "name": "Numero de Processos",

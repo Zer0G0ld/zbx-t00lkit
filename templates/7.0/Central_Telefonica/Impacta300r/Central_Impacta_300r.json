@@ -5,6 +5,10 @@
             {
                 "uuid": "aa21e87878f2482090ab6f9a6126cce0",
                 "name": "CPD"
+            },
+            {
+                "uuid": "cf5013a89dbf4606a844226b31ecbaba",
+                "name": "Infraestrutura"
             }
         ],
         "templates": [
@@ -15,6 +19,9 @@
                 "groups": [
                     {
                         "name": "CPD"
+                    },
+                    {
+                        "name": "Infraestrutura"
                     }
                 ],
                 "items": [
@@ -23,9 +30,6 @@
                         "name": "Checagem do Host",
                         "type": "SIMPLE",
                         "key": "icmpping",
-                        "valuemap": {
-                            "name": "Check ICMP"
-                        },
                         "triggers": [
                             {
                                 "uuid": "0c72c1f01f534f289ac6dc3205695a1d",
@@ -63,6 +67,14 @@
                                 "priority": "HIGH"
                             }
                         ]
+                    },
+                    {
+                        "uuid": "bd6f2a9ede9f44f19d32e0ab8ef0579e",
+                        "name": "Uptime do sistema (segundos)",
+                        "type": "CALCULATED",
+                        "key": "impacta.uptime.seconds",
+                        "units": "s",
+                        "params": "last(//sysUptime) * 0.01"
                     },
                     {
                         "uuid": "10c5425398ed4341be102f1043ac8afd",
@@ -116,25 +128,34 @@
                     },
                     {
                         "uuid": "ce0c31b27e884c7185a1fbe015db22c9",
-                        "name": "Uptime do sistema",
+                        "name": "Uptime do sistema (bruto)",
                         "type": "SNMP_AGENT",
                         "snmp_oid": ".1.3.6.1.2.1.1.3.0",
-                        "key": "sysUptime",
-                        "units": "s"
+                        "key": "sysUptime"
+                    }
+                ],
+                "tags": [
+                    {
+                        "tag": "class",
+                        "value": "Infra"
+                    },
+                    {
+                        "tag": "target",
+                        "value": "intelbras"
                     }
                 ],
                 "valuemaps": [
                     {
-                        "uuid": "02bb957dcc4c46b99ba3431190c039e8",
+                        "uuid": "000a1d465eb8488b8a4a9380e1871c89",
                         "name": "Check ICMP",
                         "mappings": [
                             {
                                 "value": "0",
-                                "newvalue": "Falha"
+                                "newvalue": "Falha (Central offline)"
                             },
                             {
                                 "value": "1",
-                                "newvalue": "OK"
+                                "newvalue": "OK (Central online)"
                             }
                         ]
                     },
@@ -169,6 +190,28 @@
                             {
                                 "value": "7",
                                 "newvalue": "lowerLayerDown"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "088523aafd674bbf9ebe5633c9c1c811",
+                        "name": "Status SIP",
+                        "mappings": [
+                            {
+                                "value": "0",
+                                "newvalue": "n\u00e3o registrado"
+                            },
+                            {
+                                "value": "1",
+                                "newvalue": "registrado"
+                            },
+                            {
+                                "value": "2",
+                                "newvalue": "registrando"
+                            },
+                            {
+                                "value": "3",
+                                "newvalue": "erro de autentica\u00e7\u00e3o"
                             }
                         ]
                     }

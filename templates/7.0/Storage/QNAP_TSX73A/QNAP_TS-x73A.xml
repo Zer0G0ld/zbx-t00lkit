@@ -6,6 +6,10 @@
             <uuid>aa21e87878f2482090ab6f9a6126cce0</uuid>
             <name>CPD</name>
         </template_group>
+        <template_group>
+            <uuid>cf5013a89dbf4606a844226b31ecbaba</uuid>
+            <name>Infraestrutura</name>
+        </template_group>
     </template_groups>
     <templates>
         <template>
@@ -15,6 +19,9 @@
             <groups>
                 <group>
                     <name>CPD</name>
+                </group>
+                <group>
+                    <name>Infraestrutura</name>
                 </group>
             </groups>
             <items>
@@ -52,6 +59,16 @@
                     <params>(last(//hrStorageUsed.44) / last(//hrStorageSize)) * 100</params>
                 </item>
             </items>
+            <tags>
+                <tag>
+                    <tag>class</tag>
+                    <value>infra</value>
+                </tag>
+                <tag>
+                    <tag>target</tag>
+                    <value>storage</value>
+                </tag>
+            </tags>
         </template>
     </templates>
 </zabbix_export>

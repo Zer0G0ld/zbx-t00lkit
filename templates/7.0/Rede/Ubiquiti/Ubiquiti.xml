@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>7.0</version>
+    <template_groups>
+        <template_group>
+            <uuid>aa21e87878f2482090ab6f9a6126cce0</uuid>
+            <name>CPD</name>
+        </template_group>
+        <template_group>
+            <uuid>cf5013a89dbf4606a844226b31ecbaba</uuid>
+            <name>Infraestrutura</name>
+        </template_group>
+        <template_group>
+            <uuid>d37f7ac76d8e40f19799ef0f58d44b4c</uuid>
+            <name>REDE</name>
+        </template_group>
+    </template_groups>
+    <templates>
+        <template>
+            <uuid>912b395cf5534f72b1f72aa679632219</uuid>
+            <template>Ubiquiti</template>
+            <name>Ubiquiti</name>
+            <groups>
+                <group>
+                    <name>CPD</name>
+                </group>
+                <group>
+                    <name>Infraestrutura</name>
+                </group>
+                <group>
+                    <name>REDE</name>
+                </group>
+            </groups>
+            <items>
+                <item>
+                    <uuid>c59f5629bfdd44eb9da86b2c7d934279</uuid>
+                    <name>ICMP ping</name>
+                    <type>SIMPLE</type>
+                    <key>icmpping</key>
+                    <description>Disponibilidade (1/0)</description>
+                    <valuemap>
+                        <name>Status ICMP</name>
+                    </valuemap>
+                    <triggers>
+                        <trigger>
+                            <uuid>8bac14791443432b803939e2418d043d</uuid>
+                            <expression>max(/Ubiquiti/icmpping,1m)=0</expression>
+                            <name>{HOST.NAME} está offline há 1 minuto</name>
+                            <priority>HIGH</priority>
+                        </trigger>
+                        <trigger>
+                            <uuid>dda90b2541a745e685337a72404096ec</uuid>
+                            <expression>max(/Ubiquiti/icmpping,3m)=0</expression>
+                            <name>{HOST.NAME} está offline há mais de 3 minutos</name>
+                            <priority>DISASTER</priority>
+                            <dependencies>
+                                <dependency>
+                                    <name>{HOST.NAME} está offline há 1 minuto</name>
+                                    <expression>max(/Ubiquiti/icmpping,1m)=0</expression>
+                                </dependency>
+                            </dependencies>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>8492c81f51184c7790dd72114dee290b</uuid>
+                    <name>ICMP loss</name>
+                    <type>SIMPLE</type>
+                    <key>icmppingloss</key>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>Perda de pacotes</description>
+                </item>
+                <item>
+                    <uuid>198f32e3140747e2be758f8244d55385</uuid>
+                    <name>ICMP response time</name>
+                    <type>SIMPLE</type>
+                    <key>icmppingsec</key>
+                    <value_type>FLOAT</value_type>
+                    <units>s</units>
+                    <description>Tempo de resposta (latência)</description>
+                </item>
+            </items>
+            <tags>
+                <tag>
+                    <tag>class</tag>
+                    <value>infra</value>
+                </tag>
+                <tag>
+                    <tag>target</tag>
+                    <value>rede</value>
+                </tag>
+            </tags>
+            <valuemaps>
+                <valuemap>
+                    <uuid>1d093c5916ec4a93871a4d88e691443b</uuid>
+                    <name>Status ICMP</name>
+                    <mappings>
+                        <mapping>
+                            <value>0</value>
+                            <newvalue>Offline</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>1</value>
+                            <newvalue>Online</newvalue>
+                        </mapping>
+                    </mappings>
+                </valuemap>
+            </valuemaps>
+        </template>
+    </templates>
+</zabbix_export>

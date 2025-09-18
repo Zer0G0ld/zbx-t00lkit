@@ -1,0 +1,107 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+    - uuid: aa21e87878f2482090ab6f9a6126cce0
+      name: CPD
+    - uuid: 00546c90680a47218e0b192c55e9fc94
+      name: Impressora
+    - uuid: cf5013a89dbf4606a844226b31ecbaba
+      name: Infraestrutura
+    - uuid: 1b51b0147ea64b04b3f2c0edbc9fc8c0
+      name: OS
+    - uuid: d37f7ac76d8e40f19799ef0f58d44b4c
+      name: REDE
+  templates:
+    - uuid: 0304a9d8b4ae4ef98a5f910bae04b68f
+      template: 'Grandstream DP752'
+      name: 'Grandstream DP752'
+      description: |
+        Monitoramento simples do Grandstream DP752, ele é bem limitado por não ser um UCM da Grandstream então é bem simples o monitoramento.
+        
+        Aqui ele abrange pelo menos os itens como nome, descrição, localização, contato e ICMP
+      groups:
+        - name: CPD
+        - name: Impressora
+        - name: Infraestrutura
+        - name: OS
+        - name: REDE
+      items:
+        - uuid: cc4f9abe881246d2b03d976a081e6cb4
+          name: Contato
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.1.4.0
+          key: contact
+          value_type: TEXT
+          trends: '0'
+        - uuid: a81d368124724009879b6ec54bebc283
+          name: 'ICMP ping'
+          type: SIMPLE
+          key: icmpping
+          valuemap:
+            name: 'ICMP ping'
+          triggers:
+            - uuid: dcc6744a30fc4a9698e4007e322ec44b
+              expression: 'last(/Grandstream DP752/icmpping)=0'
+              name: 'DP752 Offline'
+              priority: DISASTER
+        - uuid: 76e40b8da58d41fca7363d1f032b367b
+          name: Localização
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.1.6.0
+          key: local
+          value_type: TEXT
+          trends: '0'
+        - uuid: 03849021b7674bd787ddf87c2ceb10db
+          name: 'Pacotes SNMP recebidos'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.11.1.0
+          key: snmpInPkts
+        - uuid: a3775efdcfcf4a1e9c00d5d9e17188cc
+          name: 'Pacotes SNMP enviados'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.11.2.0
+          key: snmpOutPkts
+        - uuid: 72c3112d8ac34579b258959f884ee7a6
+          name: 'Descrição do sistema'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.1.1.0
+          key: sys.desc
+          value_type: TEXT
+          trends: '0'
+        - uuid: 0448d1f05e7848b5a8fddd2d43877c74
+          name: 'Nome do sistema'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.1.5.0
+          key: sys.name
+          value_type: TEXT
+          trends: '0'
+        - uuid: 89ebc59cebf347c089c7f7eae735aad7
+          name: 'Uptime via SNMP'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.1.3.0
+          key: system.uptime
+          triggers:
+            - uuid: 8c782744e6f44d19848258826bb14fb0
+              expression: 'last(/Grandstream DP752/system.uptime)=0'
+              name: 'DP752 Uptime Zerado'
+              priority: DISASTER
+      tags:
+        - tag: class
+          value: Infra
+        - tag: target
+          value: Grandstream
+      valuemaps:
+        - uuid: b225f347ecc44b6cb13ea3f445bea5c8
+          name: 'ICMP ping'
+          mappings:
+            - value: '0'
+              newvalue: 'O ping ICMP falha.'
+            - value: '1'
+              newvalue: 'O ping ICMP foi bem-sucedido.'
+        - uuid: 15fbf32459e54c2fb5297b6393d33b18
+          name: 'SIP Map'
+          mappings:
+            - value: '0'
+              newvalue: 'não registrado'
+            - value: '1'
+              newvalue: registrado

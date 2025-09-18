@@ -5,6 +5,10 @@
             {
                 "uuid": "aa21e87878f2482090ab6f9a6126cce0",
                 "name": "CPD"
+            },
+            {
+                "uuid": "cf5013a89dbf4606a844226b31ecbaba",
+                "name": "Infraestrutura"
             }
         ],
         "templates": [
@@ -15,6 +19,9 @@
                 "groups": [
                     {
                         "name": "CPD"
+                    },
+                    {
+                        "name": "Infraestrutura"
                     }
                 ],
                 "items": [
@@ -50,6 +57,16 @@
                         "value_type": "FLOAT",
                         "units": "%",
                         "params": "(last(//hrStorageUsed.44) / last(//hrStorageSize)) * 100"
+                    }
+                ],
+                "tags": [
+                    {
+                        "tag": "class",
+                        "value": "infra"
+                    },
+                    {
+                        "tag": "target",
+                        "value": "storage"
                     }
                 ]
             }

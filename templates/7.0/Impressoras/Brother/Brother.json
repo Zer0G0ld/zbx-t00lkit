@@ -3,8 +3,8 @@
         "version": "7.0",
         "template_groups": [
             {
-                "uuid": "aa21e87878f2482090ab6f9a6126cce0",
-                "name": "CPD"
+                "uuid": "00546c90680a47218e0b192c55e9fc94",
+                "name": "Impressora"
             }
         ],
         "templates": [
@@ -14,7 +14,7 @@
                 "name": "Brother",
                 "groups": [
                     {
-                        "name": "CPD"
+                        "name": "Impressora"
                     }
                 ],
                 "items": [
@@ -247,6 +247,16 @@
                                 "priority": "HIGH"
                             }
                         ]
+                    }
+                ],
+                "tags": [
+                    {
+                        "tag": "class",
+                        "value": "utilizade"
+                    },
+                    {
+                        "tag": "target",
+                        "value": "impressora"
                     }
                 ],
                 "macros": [

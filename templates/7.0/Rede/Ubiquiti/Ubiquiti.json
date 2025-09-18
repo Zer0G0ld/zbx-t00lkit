@@ -1,0 +1,113 @@
+{
+    "zabbix_export": {
+        "version": "7.0",
+        "template_groups": [
+            {
+                "uuid": "aa21e87878f2482090ab6f9a6126cce0",
+                "name": "CPD"
+            },
+            {
+                "uuid": "cf5013a89dbf4606a844226b31ecbaba",
+                "name": "Infraestrutura"
+            },
+            {
+                "uuid": "d37f7ac76d8e40f19799ef0f58d44b4c",
+                "name": "REDE"
+            }
+        ],
+        "templates": [
+            {
+                "uuid": "912b395cf5534f72b1f72aa679632219",
+                "template": "Ubiquiti",
+                "name": "Ubiquiti",
+                "groups": [
+                    {
+                        "name": "CPD"
+                    },
+                    {
+                        "name": "Infraestrutura"
+                    },
+                    {
+                        "name": "REDE"
+                    }
+                ],
+                "items": [
+                    {
+                        "uuid": "c59f5629bfdd44eb9da86b2c7d934279",
+                        "name": "ICMP ping",
+                        "type": "SIMPLE",
+                        "key": "icmpping",
+                        "description": "Disponibilidade (1/0)",
+                        "valuemap": {
+                            "name": "Status ICMP"
+                        },
+                        "triggers": [
+                            {
+                                "uuid": "8bac14791443432b803939e2418d043d",
+                                "expression": "max(/Ubiquiti/icmpping,1m)=0",
+                                "name": "{HOST.NAME} est\u00e1 offline h\u00e1 1 minuto",
+                                "priority": "HIGH"
+                            },
+                            {
+                                "uuid": "dda90b2541a745e685337a72404096ec",
+                                "expression": "max(/Ubiquiti/icmpping,3m)=0",
+                                "name": "{HOST.NAME} est\u00e1 offline h\u00e1 mais de 3 minutos",
+                                "priority": "DISASTER",
+                                "dependencies": [
+                                    {
+                                        "name": "{HOST.NAME} est\u00e1 offline h\u00e1 1 minuto",
+                                        "expression": "max(/Ubiquiti/icmpping,1m)=0"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "8492c81f51184c7790dd72114dee290b",
+                        "name": "ICMP loss",
+                        "type": "SIMPLE",
+                        "key": "icmppingloss",
+                        "value_type": "FLOAT",
+                        "units": "%",
+                        "description": "Perda de pacotes"
+                    },
+                    {
+                        "uuid": "198f32e3140747e2be758f8244d55385",
+                        "name": "ICMP response time",
+                        "type": "SIMPLE",
+                        "key": "icmppingsec",
+                        "value_type": "FLOAT",
+                        "units": "s",
+                        "description": "Tempo de resposta (lat\u00eancia)"
+                    }
+                ],
+                "tags": [
+                    {
+                        "tag": "class",
+                        "value": "infra"
+                    },
+                    {
+                        "tag": "target",
+                        "value": "rede"
+                    }
+                ],
+                "valuemaps": [
+                    {
+                        "uuid": "1d093c5916ec4a93871a4d88e691443b",
+                        "name": "Status ICMP",
+                        "mappings": [
+                            {
+                                "value": "0",
+                                "newvalue": "Offline"
+                            },
+                            {
+                                "value": "1",
+                                "newvalue": "Online"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}
