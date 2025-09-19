@@ -52,6 +52,29 @@
                     </triggers>
                 </item>
                 <item>
+                    <uuid>c03b4fd044da492195238a9bd8c3fb48</uuid>
+                    <name>Erros no EventLog - System</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>eventlog[System,,Error]</key>
+                    <value_type>LOG</value_type>
+                    <trends>0</trends>
+                    <triggers>
+                        <trigger>
+                            <uuid>33ce7480dc3b49d881b38693d28b6e04</uuid>
+                            <expression>last(/Windows Agent/eventlog[System,,Error],#1)&lt;&gt;0</expression>
+                            <name>Erros no EventLog - System</name>
+                            <priority>DISASTER</priority>
+                            <description>Novo erro detectado no log de eventos do Windows (System).</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>eventlog</value>
+                                </tag>
+                            </tags>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
                     <uuid>6d12445462f5406fbf0e988f11e2a145</uuid>
                     <name>Cache bytes</name>
                     <key>perf_counter_en[&quot;\Memory\Cache Bytes&quot;]</key>
@@ -206,6 +229,30 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                             <expression>last(/Windows Agent/proc.num[])&gt;=100</expression>
                             <name>Numero de Processos passou de 100</name>
                             <priority>AVERAGE</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>66a78252c81d45ca8b4164e409a110db</uuid>
+                    <name>Status do serviço Spooler</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>service.info[Spooler,state]</key>
+                    <valuemap>
+                        <name>Valores do service.info</name>
+                    </valuemap>
+                    <triggers>
+                        <trigger>
+                            <uuid>0d070642afa847d0a55e9fb87329cfd4</uuid>
+                            <expression>last(/Windows Agent/service.info[Spooler,state])&lt;&gt;4</expression>
+                            <name>Spooler parado</name>
+                            <priority>HIGH</priority>
+                            <description>O serviço Spooler não está em execução.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>service</value>
+                                </tag>
+                            </tags>
                         </trigger>
                     </triggers>
                 </item>
@@ -434,29 +481,6 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     </triggers>
                 </item>
                 <item>
-                    <uuid>9ed2ec2af5e342b590942c5d2a394723</uuid>
-                    <name>Windows: Network interfaces WMI get</name>
-                    <key>wmi.getall[root\cimv2,&quot;select Name,Description,NetConnectionID,Speed,AdapterTypeId,NetConnectionStatus,GUID from win32_networkadapter where PhysicalAdapter=True and NetConnectionStatus&gt;0&quot;]</key>
-                    <history>0</history>
-                    <value_type>TEXT</value_type>
-                    <trends>0</trends>
-                    <description>Raw data of `win32_networkadapter.`</description>
-                    <preprocessing>
-                        <step>
-                            <type>DISCARD_UNCHANGED_HEARTBEAT</type>
-                            <parameters>
-                                <parameter>1h</parameter>
-                            </parameters>
-                        </step>
-                    </preprocessing>
-                    <tags>
-                        <tag>
-                            <tag>component</tag>
-                            <value>raw</value>
-                        </tag>
-                    </tags>
-                </item>
-                <item>
                     <uuid>89b263ee0288488eba4ef537b659b627</uuid>
                     <name>Number of cores</name>
                     <key>wmi.get[root/cimv2,&quot;Select NumberOfLogicalProcessors from Win32_ComputerSystem&quot;]</key>
@@ -471,31 +495,311 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
             </items>
             <discovery_rules>
                 <discovery_rule>
+                    <uuid>41ebad0928d94192ac2c5df60480cb2a</uuid>
+                    <name>Descoberta automática de interfaces de rede</name>
+                    <key>net.if.discovery</key>
+                    <delay>1h</delay>
+                    <filter>
+                        <evaltype>AND</evaltype>
+                        <conditions>
+                            <condition>
+                                <macro>{#IFDESCR}</macro>
+                                <value>.*</value>
+                                <formulaid>A</formulaid>
+                            </condition>
+                            <condition>
+                                <macro>{#IFGUID}</macro>
+                                <value>.*</value>
+                                <formulaid>B</formulaid>
+                            </condition>
+                            <condition>
+                                <macro>{#IFNAME}</macro>
+                                <value>.*</value>
+                                <formulaid>C</formulaid>
+                            </condition>
+                            <condition>
+                                <macro>{#SPEED}</macro>
+                                <value>.*</value>
+                                <formulaid>D</formulaid>
+                            </condition>
+                        </conditions>
+                    </filter>
+                    <description>Descobre automaticamente todas as interfaces físicas de rede ativas nos hosts monitorados via agente Zabbix (ativo) e cria dinamicamente os protótipos de itens e triggers correspondentes, garantindo monitoramento consistente de tráfego, status e pacotes por interface.
+
+Todos os protótipos utilizam macros LLD:
+
+{#IFNAME} → nome do adaptador
+
+{#IFDESCR} → descrição da interface
+
+{#SPEED} → velocidade nominal da interface
+
+Alterações nos thresholds dos protótipos de triggers devem ser avaliadas considerando a capacidade real da rede para evitar falsos positivos.
+
+Novos adaptadores de rede adicionados aos hosts serão automaticamente monitorados sem necessidade de intervenção manual.
+
+Recomenda-se não duplicar itens do template original fora da descoberta, para evitar conflitos.</description>
+                    <item_prototypes>
+                        <item_prototype>
+                            <uuid>e799b37974f548b28fa2687ffc3383fa</uuid>
+                            <name>Pacotes de entrada</name>
+                            <type>ZABBIX_ACTIVE</type>
+                            <key>net.if.in[pkts,{#IFNAME}]</key>
+                            <units>pacotes/s</units>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>2453aa58ba9b4174971ef71c9155d791</uuid>
+                                    <expression>change(/Windows Agent/net.if.in[pkts,{#IFNAME}])&lt;0</expression>
+                                    <name>Pacotes de entrada muito baixos em {#IFNAME}</name>
+                                    <priority>AVERAGE</priority>
+                                    <description>Detecta queda súbita na recepção de pacotes na interface.
+
+- Pacotes de entrada com queda brusca (entrada &lt; esperado)</description>
+                                </trigger_prototype>
+                                <trigger_prototype>
+                                    <uuid>02d40f9b598d472a9a472c62a72c94d0</uuid>
+                                    <expression>rate(/Windows Agent/net.if.in[pkts,{#IFNAME}],5m)&gt;100000</expression>
+                                    <name>Tráfego de entrada alto em {#IFNAME}</name>
+                                    <priority>HIGH</priority>
+                                    <description>Detecta aumento anormal no tráfego de entrada.
+
+- Pacotes recebidos muito altos (possível flood ou tráfego anormal)</description>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>08b9abed246a46bda07cddd50833bfe2</uuid>
+                            <name>Tráfego de entrada</name>
+                            <type>ZABBIX_ACTIVE</type>
+                            <key>net.if.in[{#IFNAME}]</key>
+                            <units>bps</units>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>0f61eba0c12047edadc2f86359f1256e</uuid>
+                                    <expression>avg(/Windows Agent/net.if.in[{#IFNAME}],5m)&lt;1000</expression>
+                                    <name>Tráfego de entrada abaixo do mínimo em {#IFNAME}</name>
+                                    <priority>AVERAGE</priority>
+                                    <description>Detecta baixa utilização (útil para interfaces críticas)</description>
+                                </trigger_prototype>
+                                <trigger_prototype>
+                                    <uuid>bc4f7e6df51f4c4681040f3e1edc8c63</uuid>
+                                    <expression>avg(/Windows Agent/net.if.in[{#IFNAME}],5m)&gt;100000000</expression>
+                                    <name>Tráfego de entrada alto em {#IFNAME}</name>
+                                    <priority>HIGH</priority>
+                                    <description>Alerta se a entrada &gt; 100 Mbps</description>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>aa550ca5415246e993a4887d52f90cae</uuid>
+                            <name>Pacotes de saída</name>
+                            <type>ZABBIX_ACTIVE</type>
+                            <key>net.if.out[pkts,{#IFNAME}]</key>
+                            <units>pacotes/s</units>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>629035deb688481e8a7c91fc478813c3</uuid>
+                                    <expression>change(/Windows Agent/net.if.out[pkts,{#IFNAME}])&lt;0</expression>
+                                    <name>Pacotes de saída muito baixos em {#IFNAME}</name>
+                                    <priority>AVERAGE</priority>
+                                    <description>Detecta queda súbita na transmissão de pacotes na interface.
+
+- Pacotes de saída com queda brusca (saída &lt; esperado)</description>
+                                </trigger_prototype>
+                                <trigger_prototype>
+                                    <uuid>781c39445d0f492b996758726a65b5e4</uuid>
+                                    <expression>rate(/Windows Agent/net.if.out[pkts,{#IFNAME}],5m)&gt;100000</expression>
+                                    <name>Tráfego de saída alto em {#IFNAME}</name>
+                                    <priority>HIGH</priority>
+                                    <description>Detecta aumento anormal no tráfego de saída.
+
+- Pacotes enviados muito altos (possível flood ou tráfego anormal)</description>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>cdbb092b5b42469b827365f0ac52529b</uuid>
+                            <name>Tráfego de saída</name>
+                            <type>ZABBIX_ACTIVE</type>
+                            <key>net.if.out[{#IFNAME}]</key>
+                            <units>bps</units>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>af793efcaba34c9a88edc95a126f1b2b</uuid>
+                                    <expression>avg(/Windows Agent/net.if.out[{#IFNAME}],5m)&lt;1000</expression>
+                                    <name>Tráfego de saída abaixo do mínimo em {#IFNAME}</name>
+                                    <priority>AVERAGE</priority>
+                                    <description>Detecta baixa utilização</description>
+                                </trigger_prototype>
+                                <trigger_prototype>
+                                    <uuid>2af986ec34bf45d09f63926754f94ad1</uuid>
+                                    <expression>avg(/Windows Agent/net.if.out[{#IFNAME}],5m)&gt;100000000</expression>
+                                    <name>Tráfego de saída alto em {#IFNAME}</name>
+                                    <priority>HIGH</priority>
+                                    <description>Alerta se a saída &gt; 100 Mbps</description>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>cdd08887e12843a98dfd82dd94603975</uuid>
+                            <name>Status da interface</name>
+                            <type>ZABBIX_ACTIVE</type>
+                            <key>net.if.status[{#IFNAME}]</key>
+                            <units>0/1</units>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>2b0f4ca9d4204b64a440b35e6d26de57</uuid>
+                                    <expression>last(/Windows Agent/net.if.status[{#IFNAME}])=2</expression>
+                                    <name>Interface {#IFNAME} inativa</name>
+                                    <priority>AVERAGE</priority>
+                                    <description>Detecta interfaces desconectadas</description>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                    </item_prototypes>
+                    <lld_macro_paths>
+                        <lld_macro_path>
+                            <lld_macro>{#IFDESCR}</lld_macro>
+                            <path>$[*].{#IFDESCR}</path>
+                        </lld_macro_path>
+                        <lld_macro_path>
+                            <lld_macro>{#IFGUID}</lld_macro>
+                            <path>$[*].{#IFGUID}</path>
+                        </lld_macro_path>
+                        <lld_macro_path>
+                            <lld_macro>{#IFNAME}</lld_macro>
+                            <path>$[*].{#IFNAME}</path>
+                        </lld_macro_path>
+                        <lld_macro_path>
+                            <lld_macro>{#SPEED}</lld_macro>
+                            <path>$[*].{#SPEED}</path>
+                        </lld_macro_path>
+                    </lld_macro_paths>
+                </discovery_rule>
+                <discovery_rule>
                     <uuid>6ff4a2547a854d8fac15ce962b6c5ec2</uuid>
                     <name>Descoberta de serviços Windows</name>
+                    <type>ZABBIX_ACTIVE</type>
                     <key>service.discovery</key>
                     <delay>1h</delay>
                     <filter>
+                        <evaltype>AND</evaltype>
                         <conditions>
                             <condition>
                                 <macro>{#SERVICE.DISPLAYNAME}</macro>
-                                <value>(?i)(Update|Telemetry)</value>
+                                <value>(?i)(Telemetry|Update|Installer|Hotfix|Driver|Adobe|Google|OneDrive|Teams)</value>
                                 <operator>NOT_MATCHES_REGEX</operator>
                                 <formulaid>A</formulaid>
                             </condition>
                             <condition>
                                 <macro>{#SERVICE.NAME}</macro>
-                                <value>^Zabbix</value>
+                                <value>^(WinDefend|wuauserv|Spooler|BITS|EventLog|MSSQL.*|W3SVC|Backup.*|AV.*|SQLAgent.*)$</value>
                                 <formulaid>B</formulaid>
+                            </condition>
+                            <condition>
+                                <macro>{#SERVICE.STARTMODE}</macro>
+                                <value>(Auto|Manual)</value>
+                                <formulaid>C</formulaid>
                             </condition>
                         </conditions>
                     </filter>
+                    <description>monitorar serviços que importam, tipo:
+
+Serviços de sistema críticos: WinDefend, wuauserv (Windows Update), Spooler (impressão), BITS (Background Intelligent Transfer), EventLog.
+
+Serviços de aplicação: bancos de dados (MSSQL*), IIS (W3SVC), serviços de backup, antivírus corporativo, etc.
+
+Serviços que impactam a disponibilidade ou segurança.
+
+Evitar:
+
+Serviços temporários de instalação, telemetry, atualização de apps de terceiros que mudam sempre de nome.
+
+Serviços não essenciais que geram alerta a todo momento.</description>
+                    <item_prototypes>
+                        <item_prototype>
+                            <uuid>7fe8f432c889409490fcf65f640d4ed4</uuid>
+                            <name>Serviço iniciado {#SERVICE.DISPLAYNAME}</name>
+                            <type>ZABBIX_ACTIVE</type>
+                            <key>service.info[{#SERVICE.NAME},startmode]</key>
+                            <description>Indica o modo de inicialização configurado do serviço {#SERVICE.DISPLAYNAME}.
+
+Valores possíveis:
+
+Automático (2)
+
+Manual (3)
+
+Desativado (4)
+
+Objetivo: Garantir que serviços críticos estão configurados para iniciar automaticamente ou manualmente conforme esperado, evitando falhas de disponibilidade após reinicializações.
+
+Observações: Serviços que deveriam ser sempre automáticos, mas estão em manual, podem gerar alertas de atenção.</description>
+                            <valuemap>
+                                <name>Modo de inicialização (service.info[{#SERVICE.NAME},startmod)</name>
+                            </valuemap>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>service</value>
+                                </tag>
+                            </tags>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>09d153770cb04e7e991c4a2cde233aef</uuid>
+                                    <expression>last(/Windows Agent/service.info[{#SERVICE.NAME},startmode])&lt;&gt;2</expression>
+                                    <name>Serviço {#SERVICE.DISPLAYNAME} não inicia automaticamente</name>
+                                    <priority>AVERAGE</priority>
+                                    <description>Dispara se o serviço não estiver configurado como Automático (2 = Auto).</description>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>dd7a62fb38c847a483971f1c24713b85</uuid>
+                            <name>Status do serviço {#SERVICE.DISPLAYNAME}</name>
+                            <type>ZABBIX_ACTIVE</type>
+                            <key>service.info[{#SERVICE.NAME},state]</key>
+                            <description>Monitora o estado atual do serviço {#SERVICE.DISPLAYNAME} no host Windows.
+
+Valores possíveis:
+
+Parando (1)
+
+Parado (2)
+
+Iniciando (3)
+
+Iniciado (4)
+
+Objetivo: Detectar se o serviço está parado ou falhando, permitindo alertas imediatos de indisponibilidade de serviços críticos de sistema ou aplicação.
+
+Observações: Ideal para serviços como WinDefend, wuauserv, Spooler, EventLog, bancos de dados ou servidores IIS.</description>
+                            <valuemap>
+                                <name>Status do serviço (service.info[{#SERVICE.NAME},state])</name>
+                            </valuemap>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>service</value>
+                                </tag>
+                            </tags>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>a5ee4e8e21eb4aa89040696b8519f066</uuid>
+                                    <expression>last(/Windows Agent/service.info[{#SERVICE.NAME},state])&lt;&gt;4</expression>
+                                    <name>Serviço {#SERVICE.DISPLAYNAME} parado</name>
+                                    <priority>HIGH</priority>
+                                    <description>Dispara se o serviço não estiver em execução (4 = Running).</description>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                    </item_prototypes>
                 </discovery_rule>
                 <discovery_rule>
                     <uuid>339422e2f8c74e95b4c9452381aab927</uuid>
                     <name>Descoberta de sistemas de arquivos</name>
+                    <type>ZABBIX_ACTIVE</type>
                     <key>vfs.fs.dependent.discovery</key>
-                    <delay>1h</delay>
                     <filter>
                         <conditions>
                             <condition>
@@ -510,7 +814,96 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                             </condition>
                         </conditions>
                     </filter>
-                    <description>Descobre automaticamente os sistemas de arquivos montados no host e coleta dados sobre eles.</description>
+                    <description>Descobre automaticamente todos os sistemas de arquivos montados nos hosts monitorados via agente Zabbix (ativo) e cria protótipos de itens e triggers correspondentes, garantindo monitoramento consistente de espaço e uso de inodes.</description>
+                    <item_prototypes>
+                        <item_prototype>
+                            <uuid>b07456f6ce754d0eb8254d0514c842b5</uuid>
+                            <name>Inodes livres em {#FSNAME}</name>
+                            <type>ZABBIX_ACTIVE</type>
+                            <key>vfs.fs.inodes[{#FSNAME},free]</key>
+                            <units>inodes</units>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>f7e2a676cfc5483d9097447b19a80769</uuid>
+                            <name>Uso percentual de inodes em {#FSNAME}</name>
+                            <type>ZABBIX_ACTIVE</type>
+                            <key>vfs.fs.inodes[{#FSNAME},pused]</key>
+                            <units>%</units>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>4c9baa42c82649bdb67a042b89b3f8b9</uuid>
+                                    <expression>avg(/Windows Agent/vfs.fs.inodes[{#FSNAME},pused],5m)&gt;95</expression>
+                                    <name>Inodes quase cheios em {#FSNAME}</name>
+                                    <priority>HIGH</priority>
+                                    <description>Crítico para inodes</description>
+                                </trigger_prototype>
+                                <trigger_prototype>
+                                    <uuid>e4f63cfb0b694e2ca7563a83590dc358</uuid>
+                                    <expression>avg(/Windows Agent/vfs.fs.inodes[{#FSNAME},pused],5m)&gt;85</expression>
+                                    <name>Inodes usados alto em {#FSNAME}</name>
+                                    <priority>AVERAGE</priority>
+                                    <description>Se o FS tiver inodes limitados</description>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>df9e997f164b46a8ae697e1b3e1a055e</uuid>
+                            <name>Inodes usados em {#FSNAME}</name>
+                            <type>ZABBIX_ACTIVE</type>
+                            <key>vfs.fs.inodes[{#FSNAME},used]</key>
+                            <units>inodes</units>
+                            <description>Opcional, se o FS suporta inodes</description>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>4cebf40446c0402ea92ad093fdd4eb8d</uuid>
+                            <name>Espaço livre em {#FSNAME}</name>
+                            <type>ZABBIX_ACTIVE</type>
+                            <key>vfs.fs.size[{#FSNAME},free]</key>
+                            <units>bytes</units>
+                            <description>Espaço disponível</description>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>f757c02f1f264b7ca7a70980982efa59</uuid>
+                            <name>Uso percentual de {#FSNAME}</name>
+                            <type>ZABBIX_ACTIVE</type>
+                            <key>vfs.fs.size[{#FSNAME},pused]</key>
+                            <value_type>FLOAT</value_type>
+                            <units>%</units>
+                            <description>Percentual usado</description>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <uuid>b109718af1c144f3bfac395dd8faecf1</uuid>
+                                    <expression>avg(/Windows Agent/vfs.fs.size[{#FSNAME},pused],5m)&gt;95</expression>
+                                    <name>Espaço quase cheio em {#FSNAME}</name>
+                                    <priority>HIGH</priority>
+                                    <description>Alerta crítico quando uso ultrapassa 95%</description>
+                                </trigger_prototype>
+                                <trigger_prototype>
+                                    <uuid>c76380302a9e40268fda5dc7a89fb09e</uuid>
+                                    <expression>avg(/Windows Agent/vfs.fs.size[{#FSNAME},pused],5m)&gt;85</expression>
+                                    <name>Espaço usado alto em {#FSNAME}</name>
+                                    <priority>AVERAGE</priority>
+                                    <description>Alerta quando uso ultrapassa 85%</description>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>ed0d8636785b458f8edc060058407858</uuid>
+                            <name>Espaço total em {#FSNAME}</name>
+                            <type>ZABBIX_ACTIVE</type>
+                            <key>vfs.fs.size[{#FSNAME},total]</key>
+                            <units>bytes</units>
+                            <description>Tamanho total do FSystem</description>
+                        </item_prototype>
+                        <item_prototype>
+                            <uuid>b329846118354b3385ea02dfff7f7de6</uuid>
+                            <name>Espaço usado em {#FSNAME}</name>
+                            <type>ZABBIX_ACTIVE</type>
+                            <key>vfs.fs.size[{#FSNAME},used]</key>
+                            <units>bytes</units>
+                            <description>Espaço em uso</description>
+                        </item_prototype>
+                    </item_prototypes>
                     <lld_macro_paths>
                         <lld_macro_path>
                             <lld_macro>{#FSLABEL}</lld_macro>
@@ -572,6 +965,262 @@ return JSON.stringify(discovered);</parameter>
                     <value>windows</value>
                 </tag>
             </tags>
+            <dashboards>
+                <dashboard>
+                    <uuid>3f85a75afb6849849c7db9bae9c6b03c</uuid>
+                    <name>Novo dashboard</name>
+                    <pages>
+                        <page>
+                            <name>Geral Windows</name>
+                            <display_period>30</display_period>
+                            <widgets>
+                                <widget>
+                                    <type>actionlog</type>
+                                    <width>27</width>
+                                    <height>5</height>
+                                    <fields>
+                                        <field>
+                                            <type>ACTION</type>
+                                            <name>actionids.0</name>
+                                            <value>
+                                                <name>Report problems to Zabbix administrators</name>
+                                            </value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>rf_rate</name>
+                                            <value>30</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>statuses.0</name>
+                                            <value>0</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>statuses.1</name>
+                                            <value>1</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>statuses.2</name>
+                                            <value>2</value>
+                                        </field>
+                                        <field>
+                                            <type>USER</type>
+                                            <name>userids.0</name>
+                                            <value>
+                                                <username>Admin</username>
+                                            </value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>hostnavigator</type>
+                                    <x>27</x>
+                                    <width>17</width>
+                                    <height>5</height>
+                                    <fields>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>group_by.0.attribute</name>
+                                            <value>0</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>group_by.1.attribute</name>
+                                            <value>2</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>maintenance</name>
+                                            <value>1</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>problems</name>
+                                            <value>0</value>
+                                        </field>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>reference</name>
+                                            <value>LFFLC</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>severities.0</name>
+                                            <value>0</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>severities.1</name>
+                                            <value>1</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>severities.2</name>
+                                            <value>2</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>severities.3</name>
+                                            <value>3</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>severities.4</name>
+                                            <value>4</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>severities.5</name>
+                                            <value>5</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                                <widget>
+                                    <type>problems</type>
+                                    <x>44</x>
+                                    <width>28</width>
+                                    <height>5</height>
+                                    <fields>
+                                        <field>
+                                            <type>STRING</type>
+                                            <name>reference</name>
+                                            <value>FIYIS</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>severities.0</name>
+                                            <value>0</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>severities.1</name>
+                                            <value>1</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>severities.2</name>
+                                            <value>2</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>severities.3</name>
+                                            <value>3</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>severities.4</name>
+                                            <value>4</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>severities.5</name>
+                                            <value>5</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show_opdata</name>
+                                            <value>2</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show_suppressed</name>
+                                            <value>1</value>
+                                        </field>
+                                        <field>
+                                            <type>INTEGER</type>
+                                            <name>show_symptoms</name>
+                                            <value>1</value>
+                                        </field>
+                                    </fields>
+                                </widget>
+                            </widgets>
+                        </page>
+                    </pages>
+                </dashboard>
+            </dashboards>
+            <valuemaps>
+                <valuemap>
+                    <uuid>5974a6dbccff4ced85a0228cb7a48683</uuid>
+                    <name>Modo de inicialização (service.info[{#SERVICE.NAME},startmod)</name>
+                    <mappings>
+                        <mapping>
+                            <value>2</value>
+                            <newvalue>Automático</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>3</value>
+                            <newvalue>Manual</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>4</value>
+                            <newvalue>Desativado</newvalue>
+                        </mapping>
+                    </mappings>
+                </valuemap>
+                <valuemap>
+                    <uuid>cb7113de7f524fb7b87b4dba1a505b19</uuid>
+                    <name>Status do serviço (service.info[{#SERVICE.NAME},state])</name>
+                    <mappings>
+                        <mapping>
+                            <value>1</value>
+                            <newvalue>Parando</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>2</value>
+                            <newvalue>Parado</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>3</value>
+                            <newvalue>Iniciando</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>4</value>
+                            <newvalue>Iniciado</newvalue>
+                        </mapping>
+                    </mappings>
+                </valuemap>
+                <valuemap>
+                    <uuid>2382bde9dfae45c8a2914a71d8cdc0fc</uuid>
+                    <name>Valores do service.info</name>
+                    <mappings>
+                        <mapping>
+                            <value>0</value>
+                            <newvalue>Unknown</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>1</value>
+                            <newvalue>Stopped</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>2</value>
+                            <newvalue>Starting</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>3</value>
+                            <newvalue>Stopping</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>4</value>
+                            <newvalue>Running</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>5</value>
+                            <newvalue>Continue Pending</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>6</value>
+                            <newvalue>Pause Pending</newvalue>
+                        </mapping>
+                        <mapping>
+                            <value>7</value>
+                            <newvalue>Paused</newvalue>
+                        </mapping>
+                    </mappings>
+                </valuemap>
+            </valuemaps>
         </template>
     </templates>
     <graphs>

@@ -31,6 +31,21 @@ zabbix_export:
               expression: 'last(/Windows Agent/agent.ping)<>0'
               name: 'Serviço Zabbix Agent está parado'
               priority: HIGH
+        - uuid: c03b4fd044da492195238a9bd8c3fb48
+          name: 'Erros no EventLog - System'
+          type: ZABBIX_ACTIVE
+          key: 'eventlog[System,,Error]'
+          value_type: LOG
+          trends: '0'
+          triggers:
+            - uuid: 33ce7480dc3b49d881b38693d28b6e04
+              expression: 'last(/Windows Agent/eventlog[System,,Error],#1)<>0'
+              name: 'Erros no EventLog - System'
+              priority: DISASTER
+              description: 'Novo erro detectado no log de eventos do Windows (System).'
+              tags:
+                - tag: component
+                  value: eventlog
         - uuid: 6d12445462f5406fbf0e988f11e2a145
           name: 'Cache bytes'
           key: 'perf_counter_en["\Memory\Cache Bytes"]'
@@ -131,6 +146,21 @@ zabbix_export:
               expression: 'last(/Windows Agent/proc.num[])>=100'
               name: 'Numero de Processos passou de 100'
               priority: AVERAGE
+        - uuid: 66a78252c81d45ca8b4164e409a110db
+          name: 'Status do serviço Spooler'
+          type: ZABBIX_ACTIVE
+          key: 'service.info[Spooler,state]'
+          valuemap:
+            name: 'Valores do service.info'
+          triggers:
+            - uuid: 0d070642afa847d0a55e9fb87329cfd4
+              expression: 'last(/Windows Agent/service.info[Spooler,state])<>4'
+              name: 'Spooler parado'
+              priority: HIGH
+              description: 'O serviço Spooler não está em execução.'
+              tags:
+                - tag: component
+                  value: service
         - uuid: e9f90a7a24254a0aa209ef1cd6c28894
           name: 'CPU utilization'
           key: system.cpu.util
@@ -271,20 +301,6 @@ zabbix_export:
               expression: 'last(/Windows Agent/vm.memory.util)>90'
               name: 'Utilização de memória >90%'
               priority: HIGH
-        - uuid: 9ed2ec2af5e342b590942c5d2a394723
-          name: 'Windows: Network interfaces WMI get'
-          key: 'wmi.getall[root\cimv2,"select Name,Description,NetConnectionID,Speed,AdapterTypeId,NetConnectionStatus,GUID from win32_networkadapter where PhysicalAdapter=True and NetConnectionStatus>0"]'
-          history: '0'
-          value_type: TEXT
-          trends: '0'
-          description: 'Raw data of `win32_networkadapter.`'
-          preprocessing:
-            - type: DISCARD_UNCHANGED_HEARTBEAT
-              parameters:
-                - 1h
-          tags:
-            - tag: component
-              value: raw
         - uuid: 89b263ee0288488eba4ef537b659b627
           name: 'Number of cores'
           key: 'wmi.get[root/cimv2,"Select NumberOfLogicalProcessors from Win32_ComputerSystem"]'
@@ -293,23 +309,235 @@ zabbix_export:
             - tag: component
               value: cpu
       discovery_rules:
+        - uuid: 41ebad0928d94192ac2c5df60480cb2a
+          name: 'Descoberta automática de interfaces de rede'
+          key: net.if.discovery
+          delay: 1h
+          filter:
+            evaltype: AND
+            conditions:
+              - macro: '{#IFDESCR}'
+                value: '.*'
+                formulaid: A
+              - macro: '{#IFGUID}'
+                value: '.*'
+                formulaid: B
+              - macro: '{#IFNAME}'
+                value: '.*'
+                formulaid: C
+              - macro: '{#SPEED}'
+                value: '.*'
+                formulaid: D
+          description: |
+            Descobre automaticamente todas as interfaces físicas de rede ativas nos hosts monitorados via agente Zabbix (ativo) e cria dinamicamente os protótipos de itens e triggers correspondentes, garantindo monitoramento consistente de tráfego, status e pacotes por interface.
+            
+            Todos os protótipos utilizam macros LLD:
+            
+            {#IFNAME} → nome do adaptador
+            
+            {#IFDESCR} → descrição da interface
+            
+            {#SPEED} → velocidade nominal da interface
+            
+            Alterações nos thresholds dos protótipos de triggers devem ser avaliadas considerando a capacidade real da rede para evitar falsos positivos.
+            
+            Novos adaptadores de rede adicionados aos hosts serão automaticamente monitorados sem necessidade de intervenção manual.
+            
+            Recomenda-se não duplicar itens do template original fora da descoberta, para evitar conflitos.
+          item_prototypes:
+            - uuid: e799b37974f548b28fa2687ffc3383fa
+              name: 'Pacotes de entrada'
+              type: ZABBIX_ACTIVE
+              key: 'net.if.in[pkts,{#IFNAME}]'
+              units: pacotes/s
+              trigger_prototypes:
+                - uuid: 2453aa58ba9b4174971ef71c9155d791
+                  expression: 'change(/Windows Agent/net.if.in[pkts,{#IFNAME}])<0'
+                  name: 'Pacotes de entrada muito baixos em {#IFNAME}'
+                  priority: AVERAGE
+                  description: |
+                    Detecta queda súbita na recepção de pacotes na interface.
+                    
+                    - Pacotes de entrada com queda brusca (entrada < esperado)
+                - uuid: 02d40f9b598d472a9a472c62a72c94d0
+                  expression: 'rate(/Windows Agent/net.if.in[pkts,{#IFNAME}],5m)>100000'
+                  name: 'Tráfego de entrada alto em {#IFNAME}'
+                  priority: HIGH
+                  description: |
+                    Detecta aumento anormal no tráfego de entrada.
+                    
+                    - Pacotes recebidos muito altos (possível flood ou tráfego anormal)
+            - uuid: 08b9abed246a46bda07cddd50833bfe2
+              name: 'Tráfego de entrada'
+              type: ZABBIX_ACTIVE
+              key: 'net.if.in[{#IFNAME}]'
+              units: bps
+              trigger_prototypes:
+                - uuid: 0f61eba0c12047edadc2f86359f1256e
+                  expression: 'avg(/Windows Agent/net.if.in[{#IFNAME}],5m)<1000'
+                  name: 'Tráfego de entrada abaixo do mínimo em {#IFNAME}'
+                  priority: AVERAGE
+                  description: 'Detecta baixa utilização (útil para interfaces críticas)'
+                - uuid: bc4f7e6df51f4c4681040f3e1edc8c63
+                  expression: 'avg(/Windows Agent/net.if.in[{#IFNAME}],5m)>100000000'
+                  name: 'Tráfego de entrada alto em {#IFNAME}'
+                  priority: HIGH
+                  description: 'Alerta se a entrada > 100 Mbps'
+            - uuid: aa550ca5415246e993a4887d52f90cae
+              name: 'Pacotes de saída'
+              type: ZABBIX_ACTIVE
+              key: 'net.if.out[pkts,{#IFNAME}]'
+              units: pacotes/s
+              trigger_prototypes:
+                - uuid: 629035deb688481e8a7c91fc478813c3
+                  expression: 'change(/Windows Agent/net.if.out[pkts,{#IFNAME}])<0'
+                  name: 'Pacotes de saída muito baixos em {#IFNAME}'
+                  priority: AVERAGE
+                  description: |
+                    Detecta queda súbita na transmissão de pacotes na interface.
+                    
+                    - Pacotes de saída com queda brusca (saída < esperado)
+                - uuid: 781c39445d0f492b996758726a65b5e4
+                  expression: 'rate(/Windows Agent/net.if.out[pkts,{#IFNAME}],5m)>100000'
+                  name: 'Tráfego de saída alto em {#IFNAME}'
+                  priority: HIGH
+                  description: |
+                    Detecta aumento anormal no tráfego de saída.
+                    
+                    - Pacotes enviados muito altos (possível flood ou tráfego anormal)
+            - uuid: cdbb092b5b42469b827365f0ac52529b
+              name: 'Tráfego de saída'
+              type: ZABBIX_ACTIVE
+              key: 'net.if.out[{#IFNAME}]'
+              units: bps
+              trigger_prototypes:
+                - uuid: af793efcaba34c9a88edc95a126f1b2b
+                  expression: 'avg(/Windows Agent/net.if.out[{#IFNAME}],5m)<1000'
+                  name: 'Tráfego de saída abaixo do mínimo em {#IFNAME}'
+                  priority: AVERAGE
+                  description: 'Detecta baixa utilização'
+                - uuid: 2af986ec34bf45d09f63926754f94ad1
+                  expression: 'avg(/Windows Agent/net.if.out[{#IFNAME}],5m)>100000000'
+                  name: 'Tráfego de saída alto em {#IFNAME}'
+                  priority: HIGH
+                  description: 'Alerta se a saída > 100 Mbps'
+            - uuid: cdd08887e12843a98dfd82dd94603975
+              name: 'Status da interface'
+              type: ZABBIX_ACTIVE
+              key: 'net.if.status[{#IFNAME}]'
+              units: 0/1
+              trigger_prototypes:
+                - uuid: 2b0f4ca9d4204b64a440b35e6d26de57
+                  expression: 'last(/Windows Agent/net.if.status[{#IFNAME}])=2'
+                  name: 'Interface {#IFNAME} inativa'
+                  priority: AVERAGE
+                  description: 'Detecta interfaces desconectadas'
+          lld_macro_paths:
+            - lld_macro: '{#IFDESCR}'
+              path: '$[*].{#IFDESCR}'
+            - lld_macro: '{#IFGUID}'
+              path: '$[*].{#IFGUID}'
+            - lld_macro: '{#IFNAME}'
+              path: '$[*].{#IFNAME}'
+            - lld_macro: '{#SPEED}'
+              path: '$[*].{#SPEED}'
         - uuid: 6ff4a2547a854d8fac15ce962b6c5ec2
           name: 'Descoberta de serviços Windows'
+          type: ZABBIX_ACTIVE
           key: service.discovery
           delay: 1h
           filter:
+            evaltype: AND
             conditions:
               - macro: '{#SERVICE.DISPLAYNAME}'
-                value: '(?i)(Update|Telemetry)'
+                value: '(?i)(Telemetry|Update|Installer|Hotfix|Driver|Adobe|Google|OneDrive|Teams)'
                 operator: NOT_MATCHES_REGEX
                 formulaid: A
               - macro: '{#SERVICE.NAME}'
-                value: ^Zabbix
+                value: '^(WinDefend|wuauserv|Spooler|BITS|EventLog|MSSQL.*|W3SVC|Backup.*|AV.*|SQLAgent.*)$'
                 formulaid: B
+              - macro: '{#SERVICE.STARTMODE}'
+                value: (Auto|Manual)
+                formulaid: C
+          description: |
+            monitorar serviços que importam, tipo:
+            
+            Serviços de sistema críticos: WinDefend, wuauserv (Windows Update), Spooler (impressão), BITS (Background Intelligent Transfer), EventLog.
+            
+            Serviços de aplicação: bancos de dados (MSSQL*), IIS (W3SVC), serviços de backup, antivírus corporativo, etc.
+            
+            Serviços que impactam a disponibilidade ou segurança.
+            
+            Evitar:
+            
+            Serviços temporários de instalação, telemetry, atualização de apps de terceiros que mudam sempre de nome.
+            
+            Serviços não essenciais que geram alerta a todo momento.
+          item_prototypes:
+            - uuid: 7fe8f432c889409490fcf65f640d4ed4
+              name: 'Serviço iniciado {#SERVICE.DISPLAYNAME}'
+              type: ZABBIX_ACTIVE
+              key: 'service.info[{#SERVICE.NAME},startmode]'
+              description: |
+                Indica o modo de inicialização configurado do serviço {#SERVICE.DISPLAYNAME}.
+                
+                Valores possíveis:
+                
+                Automático (2)
+                
+                Manual (3)
+                
+                Desativado (4)
+                
+                Objetivo: Garantir que serviços críticos estão configurados para iniciar automaticamente ou manualmente conforme esperado, evitando falhas de disponibilidade após reinicializações.
+                
+                Observações: Serviços que deveriam ser sempre automáticos, mas estão em manual, podem gerar alertas de atenção.
+              valuemap:
+                name: 'Modo de inicialização (service.info[{#SERVICE.NAME},startmod)'
+              tags:
+                - tag: component
+                  value: service
+              trigger_prototypes:
+                - uuid: 09d153770cb04e7e991c4a2cde233aef
+                  expression: 'last(/Windows Agent/service.info[{#SERVICE.NAME},startmode])<>2'
+                  name: 'Serviço {#SERVICE.DISPLAYNAME} não inicia automaticamente'
+                  priority: AVERAGE
+                  description: 'Dispara se o serviço não estiver configurado como Automático (2 = Auto).'
+            - uuid: dd7a62fb38c847a483971f1c24713b85
+              name: 'Status do serviço {#SERVICE.DISPLAYNAME}'
+              type: ZABBIX_ACTIVE
+              key: 'service.info[{#SERVICE.NAME},state]'
+              description: |
+                Monitora o estado atual do serviço {#SERVICE.DISPLAYNAME} no host Windows.
+                
+                Valores possíveis:
+                
+                Parando (1)
+                
+                Parado (2)
+                
+                Iniciando (3)
+                
+                Iniciado (4)
+                
+                Objetivo: Detectar se o serviço está parado ou falhando, permitindo alertas imediatos de indisponibilidade de serviços críticos de sistema ou aplicação.
+                
+                Observações: Ideal para serviços como WinDefend, wuauserv, Spooler, EventLog, bancos de dados ou servidores IIS.
+              valuemap:
+                name: 'Status do serviço (service.info[{#SERVICE.NAME},state])'
+              tags:
+                - tag: component
+                  value: service
+              trigger_prototypes:
+                - uuid: a5ee4e8e21eb4aa89040696b8519f066
+                  expression: 'last(/Windows Agent/service.info[{#SERVICE.NAME},state])<>4'
+                  name: 'Serviço {#SERVICE.DISPLAYNAME} parado'
+                  priority: HIGH
+                  description: 'Dispara se o serviço não estiver em execução (4 = Running).'
         - uuid: 339422e2f8c74e95b4c9452381aab927
           name: 'Descoberta de sistemas de arquivos'
+          type: ZABBIX_ACTIVE
           key: vfs.fs.dependent.discovery
-          delay: 1h
           filter:
             conditions:
               - macro: '{#FSTYPE}'
@@ -318,7 +546,71 @@ zabbix_export:
               - macro: '{#FSTYPE}'
                 value: Rede
                 formulaid: B
-          description: 'Descobre automaticamente os sistemas de arquivos montados no host e coleta dados sobre eles.'
+          description: 'Descobre automaticamente todos os sistemas de arquivos montados nos hosts monitorados via agente Zabbix (ativo) e cria protótipos de itens e triggers correspondentes, garantindo monitoramento consistente de espaço e uso de inodes.'
+          item_prototypes:
+            - uuid: b07456f6ce754d0eb8254d0514c842b5
+              name: 'Inodes livres em {#FSNAME}'
+              type: ZABBIX_ACTIVE
+              key: 'vfs.fs.inodes[{#FSNAME},free]'
+              units: inodes
+            - uuid: f7e2a676cfc5483d9097447b19a80769
+              name: 'Uso percentual de inodes em {#FSNAME}'
+              type: ZABBIX_ACTIVE
+              key: 'vfs.fs.inodes[{#FSNAME},pused]'
+              units: '%'
+              trigger_prototypes:
+                - uuid: 4c9baa42c82649bdb67a042b89b3f8b9
+                  expression: 'avg(/Windows Agent/vfs.fs.inodes[{#FSNAME},pused],5m)>95'
+                  name: 'Inodes quase cheios em {#FSNAME}'
+                  priority: HIGH
+                  description: 'Crítico para inodes'
+                - uuid: e4f63cfb0b694e2ca7563a83590dc358
+                  expression: 'avg(/Windows Agent/vfs.fs.inodes[{#FSNAME},pused],5m)>85'
+                  name: 'Inodes usados alto em {#FSNAME}'
+                  priority: AVERAGE
+                  description: 'Se o FS tiver inodes limitados'
+            - uuid: df9e997f164b46a8ae697e1b3e1a055e
+              name: 'Inodes usados em {#FSNAME}'
+              type: ZABBIX_ACTIVE
+              key: 'vfs.fs.inodes[{#FSNAME},used]'
+              units: inodes
+              description: 'Opcional, se o FS suporta inodes'
+            - uuid: 4cebf40446c0402ea92ad093fdd4eb8d
+              name: 'Espaço livre em {#FSNAME}'
+              type: ZABBIX_ACTIVE
+              key: 'vfs.fs.size[{#FSNAME},free]'
+              units: bytes
+              description: 'Espaço disponível'
+            - uuid: f757c02f1f264b7ca7a70980982efa59
+              name: 'Uso percentual de {#FSNAME}'
+              type: ZABBIX_ACTIVE
+              key: 'vfs.fs.size[{#FSNAME},pused]'
+              value_type: FLOAT
+              units: '%'
+              description: 'Percentual usado'
+              trigger_prototypes:
+                - uuid: b109718af1c144f3bfac395dd8faecf1
+                  expression: 'avg(/Windows Agent/vfs.fs.size[{#FSNAME},pused],5m)>95'
+                  name: 'Espaço quase cheio em {#FSNAME}'
+                  priority: HIGH
+                  description: 'Alerta crítico quando uso ultrapassa 95%'
+                - uuid: c76380302a9e40268fda5dc7a89fb09e
+                  expression: 'avg(/Windows Agent/vfs.fs.size[{#FSNAME},pused],5m)>85'
+                  name: 'Espaço usado alto em {#FSNAME}'
+                  priority: AVERAGE
+                  description: 'Alerta quando uso ultrapassa 85%'
+            - uuid: ed0d8636785b458f8edc060058407858
+              name: 'Espaço total em {#FSNAME}'
+              type: ZABBIX_ACTIVE
+              key: 'vfs.fs.size[{#FSNAME},total]'
+              units: bytes
+              description: 'Tamanho total do FSystem'
+            - uuid: b329846118354b3385ea02dfff7f7de6
+              name: 'Espaço usado em {#FSNAME}'
+              type: ZABBIX_ACTIVE
+              key: 'vfs.fs.size[{#FSNAME},used]'
+              units: bytes
+              description: 'Espaço em uso'
           lld_macro_paths:
             - lld_macro: '{#FSLABEL}'
               path: $.label
@@ -363,6 +655,150 @@ zabbix_export:
           value: os
         - tag: target
           value: windows
+      dashboards:
+        - uuid: 3f85a75afb6849849c7db9bae9c6b03c
+          name: 'Novo dashboard'
+          pages:
+            - name: 'Geral Windows'
+              display_period: '30'
+              widgets:
+                - type: actionlog
+                  width: '27'
+                  height: '5'
+                  fields:
+                    - type: ACTION
+                      name: actionids.0
+                      value:
+                        name: 'Report problems to Zabbix administrators'
+                    - type: INTEGER
+                      name: rf_rate
+                      value: '30'
+                    - type: INTEGER
+                      name: statuses.0
+                      value: '0'
+                    - type: INTEGER
+                      name: statuses.1
+                      value: '1'
+                    - type: INTEGER
+                      name: statuses.2
+                      value: '2'
+                    - type: USER
+                      name: userids.0
+                      value:
+                        username: Admin
+                - type: hostnavigator
+                  x: '27'
+                  width: '17'
+                  height: '5'
+                  fields:
+                    - type: INTEGER
+                      name: group_by.0.attribute
+                      value: '0'
+                    - type: INTEGER
+                      name: group_by.1.attribute
+                      value: '2'
+                    - type: INTEGER
+                      name: maintenance
+                      value: '1'
+                    - type: INTEGER
+                      name: problems
+                      value: '0'
+                    - type: STRING
+                      name: reference
+                      value: LFFLC
+                    - type: INTEGER
+                      name: severities.0
+                      value: '0'
+                    - type: INTEGER
+                      name: severities.1
+                      value: '1'
+                    - type: INTEGER
+                      name: severities.2
+                      value: '2'
+                    - type: INTEGER
+                      name: severities.3
+                      value: '3'
+                    - type: INTEGER
+                      name: severities.4
+                      value: '4'
+                    - type: INTEGER
+                      name: severities.5
+                      value: '5'
+                - type: problems
+                  x: '44'
+                  width: '28'
+                  height: '5'
+                  fields:
+                    - type: STRING
+                      name: reference
+                      value: FIYIS
+                    - type: INTEGER
+                      name: severities.0
+                      value: '0'
+                    - type: INTEGER
+                      name: severities.1
+                      value: '1'
+                    - type: INTEGER
+                      name: severities.2
+                      value: '2'
+                    - type: INTEGER
+                      name: severities.3
+                      value: '3'
+                    - type: INTEGER
+                      name: severities.4
+                      value: '4'
+                    - type: INTEGER
+                      name: severities.5
+                      value: '5'
+                    - type: INTEGER
+                      name: show_opdata
+                      value: '2'
+                    - type: INTEGER
+                      name: show_suppressed
+                      value: '1'
+                    - type: INTEGER
+                      name: show_symptoms
+                      value: '1'
+      valuemaps:
+        - uuid: 5974a6dbccff4ced85a0228cb7a48683
+          name: 'Modo de inicialização (service.info[{#SERVICE.NAME},startmod)'
+          mappings:
+            - value: '2'
+              newvalue: Automático
+            - value: '3'
+              newvalue: Manual
+            - value: '4'
+              newvalue: Desativado
+        - uuid: cb7113de7f524fb7b87b4dba1a505b19
+          name: 'Status do serviço (service.info[{#SERVICE.NAME},state])'
+          mappings:
+            - value: '1'
+              newvalue: Parando
+            - value: '2'
+              newvalue: Parado
+            - value: '3'
+              newvalue: Iniciando
+            - value: '4'
+              newvalue: Iniciado
+        - uuid: 2382bde9dfae45c8a2914a71d8cdc0fc
+          name: 'Valores do service.info'
+          mappings:
+            - value: '0'
+              newvalue: Unknown
+            - value: '1'
+              newvalue: Stopped
+            - value: '2'
+              newvalue: Starting
+            - value: '3'
+              newvalue: Stopping
+            - value: '4'
+              newvalue: Running
+            - value: '5'
+              newvalue: 'Continue Pending'
+            - value: '6'
+              newvalue: 'Pause Pending'
+            - value: '7'
+              newvalue: Paused
   graphs:
     - uuid: 0d152aa0b39141b6a55fb7fcead10e58
       name: cpu
