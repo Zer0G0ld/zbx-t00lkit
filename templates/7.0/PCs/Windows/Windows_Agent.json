@@ -23,7 +23,8 @@
                         "uuid": "cbe3ab9ad4244c0aaaaac8b4ee131d62",
                         "name": "Zabbix agent ping",
                         "key": "agent.ping",
-                        "description": "The agent always returns \"1\" for this item. May be used in combination with `nodata()` for the availability check.",
+                        "delay": "10s",
+                        "description": "Verifica se o agente Zabbix no host est\u00e1 ativo. Dispara alerta se n\u00e3o responder.",
                         "tags": [
                             {
                                 "tag": "component",
@@ -35,40 +36,200 @@
                                 "uuid": "86f324d1e0c449b0937e7c278ef517f5",
                                 "expression": "last(/Windows Agent/agent.ping)=0",
                                 "name": "Agente n\u00e3o responde",
-                                "priority": "AVERAGE"
+                                "priority": "AVERAGE",
+                                "description": "Dispara se o host n\u00e3o responder ao ping do Zabbix Agent. Importante para monitoramento de conectividade.",
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "agent"
+                                    }
+                                ]
                             },
                             {
                                 "uuid": "6785dd8382104468b0a15dfd5c48a063",
                                 "expression": "last(/Windows Agent/agent.ping)=0",
                                 "name": "Agent ping Teste 1",
+                                "status": "DISABLED",
                                 "priority": "DISASTER"
                             },
                             {
                                 "uuid": "a22011dd4177476ab67f99235720281c",
                                 "expression": "last(/Windows Agent/agent.ping)<>0",
                                 "name": "Servi\u00e7o Zabbix Agent est\u00e1 parado",
-                                "priority": "HIGH"
+                                "priority": "HIGH",
+                                "description": "Dispara se o agente Zabbix n\u00e3o est\u00e1 respondendo. Pode indicar host offline ou problema de rede.",
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "agent"
+                                    },
+                                    {
+                                        "tag": "service",
+                                        "value": "Zabbix"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "9d7086599b814d46b534b37fe2f05811",
+                                "expression": "last(/Windows Agent/agent.ping)=1",
+                                "name": "Teste Alerta",
+                                "status": "DISABLED",
+                                "priority": "DISASTER",
+                                "type": "MULTIPLE"
                             }
                         ]
                     },
                     {
-                        "uuid": "c03b4fd044da492195238a9bd8c3fb48",
-                        "name": "Erros no EventLog - System",
+                        "uuid": "a6e011cf720941c498fd0e9614cd491f",
+                        "name": "EventLog - Application Error (ID 1000)",
                         "type": "ZABBIX_ACTIVE",
-                        "key": "eventlog[System,,Error]",
+                        "key": "eventlog[Application,,Error,,1000]",
+                        "delay": "30s",
                         "value_type": "LOG",
                         "trends": "0",
+                        "description": "Detecta falha de aplicativos cr\u00edticos. \u00datil para monitorar travamentos de servi\u00e7os ou software cr\u00edtico.",
+                        "tags": [
+                            {
+                                "tag": "component",
+                                "value": "application"
+                            },
+                            {
+                                "tag": "eventlog",
+                                "value": "1000"
+                            }
+                        ],
                         "triggers": [
                             {
-                                "uuid": "33ce7480dc3b49d881b38693d28b6e04",
-                                "expression": "last(/Windows Agent/eventlog[System,,Error],#1)<>0",
-                                "name": "Erros no EventLog - System",
-                                "priority": "DISASTER",
-                                "description": "Novo erro detectado no log de eventos do Windows (System).",
+                                "uuid": "57a9c2c8572449b2b32fe4c70b6b8ca9",
+                                "expression": "last(/Windows Agent/eventlog[Application,,Error,,1000])<>0",
+                                "name": "Falha de Aplicativo detectada (EventID 1000)",
+                                "priority": "WARNING",
+                                "description": "Dispara quando algum aplicativo cr\u00edtico falha (ID 1000). Ajuda a identificar servi\u00e7os/par\u00e2metros que precisam de corre\u00e7\u00e3o.",
                                 "tags": [
                                     {
                                         "tag": "component",
-                                        "value": "eventlog"
+                                        "value": "application"
+                                    },
+                                    {
+                                        "tag": "eventlog",
+                                        "value": "1000"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "0a9e3ab5e9d0426a907d1f14e39b0b2a",
+                        "name": "EventLog - Kernel Power (ID 41)",
+                        "type": "ZABBIX_ACTIVE",
+                        "key": "eventlog[System,,Critical,,41]",
+                        "delay": "30s",
+                        "value_type": "LOG",
+                        "trends": "0",
+                        "description": "Detecta reinicializa\u00e7\u00f5es inesperadas ou quedas de energia, indicando risco de perda de dados.",
+                        "tags": [
+                            {
+                                "tag": "component",
+                                "value": "system,"
+                            },
+                            {
+                                "tag": "eventlog",
+                                "value": "41"
+                            }
+                        ],
+                        "triggers": [
+                            {
+                                "uuid": "4e257a018d084ac2bf59e37ed501c92c",
+                                "expression": "last(/Windows Agent/eventlog[System,,Critical,,41])<>0",
+                                "name": "Reinicializa\u00e7\u00e3o inesperada / Queda de energia (EventID 41)",
+                                "priority": "HIGH",
+                                "description": "Indica desligamento inesperado ou queda de energia. Importante para rastrear perda de dados ou falhas de hardware.",
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "system"
+                                    },
+                                    {
+                                        "tag": "eventlog",
+                                        "value": "41"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "a15fc697085b45059777fdf6eb735101",
+                        "name": "EventLog - Bad Block (ID 7)",
+                        "type": "ZABBIX_ACTIVE",
+                        "key": "eventlog[System,,Error,,7]",
+                        "delay": "30s",
+                        "value_type": "LOG",
+                        "trends": "0",
+                        "description": "Indica setores defeituosos em HD/SSD. A\u00e7\u00e3o recomendada: backup e verifica\u00e7\u00e3o de disco.",
+                        "tags": [
+                            {
+                                "tag": "component",
+                                "value": "disk"
+                            },
+                            {
+                                "tag": "eventlog",
+                                "value": "7"
+                            }
+                        ],
+                        "triggers": [
+                            {
+                                "uuid": "e1f4fe09c7a940799df6c75ee7417ec6",
+                                "expression": "last(/Windows Agent/eventlog[System,,Error,,7])<>0",
+                                "name": "Falha de disco detectada (Bad Block - EventID 7)",
+                                "priority": "DISASTER",
+                                "description": "Dispara quando o Windows registra erro de Bad Block. Pode indicar setores defeituosos no HD/SSD. A\u00e7\u00e3o imediata: backup + verificar disco.",
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "disk"
+                                    },
+                                    {
+                                        "tag": "eventlog",
+                                        "value": "7"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "13e32c8c676b480bb73bca6eb502095d",
+                        "name": "EventLog - Virtual Memory Error (ID 2020/2021)",
+                        "type": "ZABBIX_ACTIVE",
+                        "key": "eventlog[System,,Error,,2020,2021]",
+                        "delay": "30s",
+                        "value_type": "LOG",
+                        "trends": "0",
+                        "description": "Sistema sem mem\u00f3ria virtual ou mem\u00f3ria de pool n\u00e3o paginada, podendo travar Windows.",
+                        "tags": [
+                            {
+                                "tag": "component",
+                                "value": "memory"
+                            },
+                            {
+                                "tag": "eventlog",
+                                "value": "2020/2021"
+                            }
+                        ],
+                        "triggers": [
+                            {
+                                "uuid": "03665e5616044073a99296dfc0d83775",
+                                "expression": "last(/Windows Agent/eventlog[System,,Error,,2020,2021])<>0",
+                                "name": "Falta de mem\u00f3ria virtual (EventID 2020/2021)",
+                                "priority": "DISASTER",
+                                "description": "Dispara quando o sistema est\u00e1 sem mem\u00f3ria virtual (2020) ou mem\u00f3ria de pool n\u00e3o paginada (2021). Pode travar o Windows.",
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "memory"
+                                    },
+                                    {
+                                        "tag": "eventlog",
+                                        "value": "2020/2021"
                                     }
                                 ]
                             }
@@ -79,7 +240,7 @@
                         "name": "Cache bytes",
                         "key": "perf_counter_en[\"\\Memory\\Cache Bytes\"]",
                         "units": "B",
-                        "description": "Cache Bytes is the sum of the Memory\\\\System Cache Resident Bytes, Memory\\\\System Driver Resident Bytes, Memory\\\\System Code Resident Bytes, and Memory\\\\Pool Paged Resident Bytes counters. This counter displays the last observed value only; it is not an average.",
+                        "description": "Quantidade de mem\u00f3ria cache em uso. Pode ajudar a identificar consumo excessivo de mem\u00f3ria.",
                         "tags": [
                             {
                                 "tag": "component",
@@ -92,7 +253,7 @@
                         "name": "Memory pool non-paged",
                         "key": "perf_counter_en[\"\\Memory\\Pool Nonpaged Bytes\"]",
                         "units": "B",
-                        "description": "This measures the size, in bytes, of the non-paged pool. This is an area of system memory for objects that cannot be written to disk but instead must remain in physical memory as long as they are allocated.\nThere is a possible memory leak if the value is greater than 175MB (or 100MB with the /3GB switch). Consequently, Event ID 2019 is recorded in the system event log.",
+                        "description": "Mem\u00f3ria n\u00e3o paginada em uso. Uso elevado pode indicar vazamento de mem\u00f3ria de drivers.",
                         "tags": [
                             {
                                 "tag": "component",
@@ -104,7 +265,18 @@
                                 "uuid": "b860dce8600447e5851234655f66bb56",
                                 "expression": "last(/Windows Agent/perf_counter_en[\"\\Memory\\Pool Nonpaged Bytes\"])>524288000",
                                 "name": "Mem\u00f3ria n\u00e3o paginada alta (>500MB)",
-                                "priority": "AVERAGE"
+                                "priority": "AVERAGE",
+                                "description": "Dispara quando a mem\u00f3ria n\u00e3o paginada ultrapassa 500MB. Pode indicar vazamento de mem\u00f3ria de drivers.",
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "memory"
+                                    },
+                                    {
+                                        "tag": "threshold",
+                                        "value": "500MB"
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -114,7 +286,7 @@
                         "key": "perf_counter_en[\"\\Paging file(_Total)\\% Usage\"]",
                         "value_type": "FLOAT",
                         "units": "%",
-                        "description": "The used space of swap volume/file in percent.",
+                        "description": "Percentual de uso do arquivo de pagina\u00e7\u00e3o. Uso alto pode indicar falta de mem\u00f3ria RAM.",
                         "tags": [
                             {
                                 "tag": "component",
@@ -130,7 +302,18 @@
                                 "uuid": "e593bf2c550f468785feb40a4dcf5c62",
                                 "expression": "last(/Windows Agent/perf_counter_en[\"\\Paging file(_Total)\\% Usage\"])>70",
                                 "name": "Uso de Swap acima de 70%",
-                                "priority": "AVERAGE"
+                                "priority": "AVERAGE",
+                                "description": "Dispara quando o arquivo de pagina\u00e7\u00e3o ultrapassa 70% de uso. Pode indicar falta de mem\u00f3ria f\u00edsica.",
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "memory"
+                                    },
+                                    {
+                                        "tag": "threshold",
+                                        "value": "70%"
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -140,11 +323,30 @@
                         "key": "perf_counter_en[\"\\Processor Information(_total)\\% DPC Time\"]",
                         "value_type": "FLOAT",
                         "units": "%",
-                        "description": "Processor DPC time is the time that a single processor spent receiving and servicing deferred procedure calls (DPCs). DPCs are interrupts that run at a lower priority than standard interrupts. `% DPC Time` is a component of `% Privileged Time` because DPCs are executed in privileged mode. If a high `% DPC Time` is sustained, there may be a processor bottleneck or an application or hardware related issue that can significantly diminish overall system performance.",
+                        "description": "Tempo gasto em rotinas DPC (Deferred Procedure Call). Valores altos indicam drivers ou hardware gerando overhead.",
                         "tags": [
                             {
                                 "tag": "component",
                                 "value": "cpu"
+                            }
+                        ],
+                        "triggers": [
+                            {
+                                "uuid": "dcf8c7769be046f8823ef94a4d34dc4d",
+                                "expression": "last(/Windows Agent/perf_counter_en[\"\\Processor Information(_total)\\% DPC Time\"])>5",
+                                "name": "CPU DPC Time anormal",
+                                "priority": "AVERAGE",
+                                "description": "Tempo gasto em Deferred Procedure Calls (DPC) acima de 5%. Pode indicar que drivers ou hardware est\u00e3o causando overhead na CPU, afetando performance.",
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "cpu"
+                                    },
+                                    {
+                                        "tag": "metric",
+                                        "value": "DPC Time"
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -154,11 +356,30 @@
                         "key": "perf_counter_en[\"\\Processor Information(_total)\\% Interrupt Time\"]",
                         "value_type": "FLOAT",
                         "units": "%",
-                        "description": "The processor information `% Interrupt Time` counter indicates how much time the processor spends handling hardware interrupts during sample intervals. It reflects the activity of devices like the system clock, mouse, disk drivers, and network cards. A value above 20% suggests possible hardware issues.",
+                        "description": "Percentual de tempo gasto com interrup\u00e7\u00f5es de hardware. Valores altos indicam poss\u00edvel problema de dispositivo.",
                         "tags": [
                             {
                                 "tag": "component",
                                 "value": "cpu"
+                            }
+                        ],
+                        "triggers": [
+                            {
+                                "uuid": "fb1349434de74fe8a73d95001eb08d90",
+                                "expression": "last(/Windows Agent/perf_counter_en[\"\\Processor Information(_total)\\% Interrupt Time\"])>5",
+                                "name": "CPU Interrupt Time alta",
+                                "priority": "AVERAGE",
+                                "description": "Percentual de tempo gasto com interrup\u00e7\u00f5es de hardware acima de 5%. Pode indicar problemas em dispositivos ou drivers que geram muitas interrup\u00e7\u00f5es.",
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "cpu"
+                                    },
+                                    {
+                                        "tag": "metric",
+                                        "value": "Interrupt Time"
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -168,11 +389,47 @@
                         "key": "perf_counter_en[\"\\Processor Information(_total)\\% Privileged Time\"]",
                         "value_type": "FLOAT",
                         "units": "%",
-                        "description": "The processor information `% Privileged Time` counter shows the percent of time that the processor is spent executing in Kernel (or Privileged) mode. Privileged mode includes services interrupts inside Interrupt Service Routines (ISRs), executing Deferred Procedure Calls (DPCs), Device Driver calls and other kernel-mode functions of the Windows Operating System.",
+                        "description": "Percentual de tempo da CPU em modo kernel. Valores altos podem indicar processos pesados ou drivers problem\u00e1ticos.",
                         "tags": [
                             {
                                 "tag": "component",
                                 "value": "cpu"
+                            }
+                        ],
+                        "triggers": [
+                            {
+                                "uuid": "cb43d46f471349e798090c9990856b02",
+                                "expression": "last(/Windows Agent/perf_counter_en[\"\\Processor Information(_total)\\% Privileged Time\"])>70",
+                                "name": "CPU Privileged Time alta",
+                                "priority": "HIGH",
+                                "description": "Percentual da CPU em modo kernel acima de 70%. Valores altos podem indicar drivers ou processos problem\u00e1ticos que impactam a performance do sistema.",
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "cpu"
+                                    },
+                                    {
+                                        "tag": "metric",
+                                        "value": "Privileged Time"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "fee2a5565d0d44289edff96054dd6fd0",
+                                "expression": "last(/Windows Agent/perf_counter_en[\"\\Processor Information(_total)\\% Privileged Time\"])>80",
+                                "name": "CPU User Time alta",
+                                "priority": "HIGH",
+                                "description": "Percentual da CPU em modo usu\u00e1rio acima de 80%. Indica processos pesados que est\u00e3o consumindo muitos recursos do processador.",
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "cpu"
+                                    },
+                                    {
+                                        "tag": "metric",
+                                        "value": "User Time"
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -182,7 +439,7 @@
                         "key": "perf_counter_en[\"\\Processor Information(_total)\\% User Time\"]",
                         "value_type": "FLOAT",
                         "units": "%",
-                        "description": "The processor information `% User Time` counter shows the percent of time that the processor(s) is spent executing in User mode.",
+                        "description": "Percentual de tempo da CPU executando c\u00f3digo em modo usu\u00e1rio. Alta utiliza\u00e7\u00e3o indica processos intensivos em CPU.",
                         "tags": [
                             {
                                 "tag": "component",
@@ -195,7 +452,7 @@
                         "name": "CPU queue length",
                         "key": "perf_counter_en[\"\\System\\Processor Queue Length\"]",
                         "value_type": "FLOAT",
-                        "description": "The Processor Queue Length shows the number of threads that are observed as delayed in the processor Ready Queue and are waiting to be executed.",
+                        "description": "N\u00famero de threads esperando por CPU. Valores altos por muito tempo indicam gargalo de processamento.",
                         "tags": [
                             {
                                 "tag": "component",
@@ -207,7 +464,18 @@
                                 "uuid": "fc1cd7a0275b480aaa53e374f8dc633c",
                                 "expression": "avg(/Windows Agent/perf_counter_en[\"\\System\\Processor Queue Length\"],5m)>5",
                                 "name": "Alta fila de processador (>5) por 5 minutos",
-                                "priority": "AVERAGE"
+                                "priority": "AVERAGE",
+                                "description": "Dispara se a fila de CPU estiver acima de 5 por 5 minutos. Indica gargalo de processamento.",
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "cpu"
+                                    },
+                                    {
+                                        "tag": "threshold",
+                                        "value": "5"
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -215,7 +483,7 @@
                         "uuid": "42d47118592e4d47936a1697c7115e08",
                         "name": "Number of processes",
                         "key": "proc.num[]",
-                        "description": "The number of processes.",
+                        "description": "N\u00famero total de processos ativos. Pode ser usado para detectar excesso de processos ou loops infinitos.",
                         "tags": [
                             {
                                 "tag": "component",
@@ -227,7 +495,18 @@
                                 "uuid": "326cce9078934db3ae99c9020be6e195",
                                 "expression": "last(/Windows Agent/proc.num[])>=100",
                                 "name": "Numero de Processos passou de 100",
-                                "priority": "AVERAGE"
+                                "priority": "AVERAGE",
+                                "description": "Dispara quando a quantidade de processos ativos excede 100. Pode indicar software rodando em excesso.",
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "os"
+                                    },
+                                    {
+                                        "tag": "threshold",
+                                        "value": "100"
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -236,6 +515,7 @@
                         "name": "Status do servi\u00e7o Spooler",
                         "type": "ZABBIX_ACTIVE",
                         "key": "service.info[Spooler,state]",
+                        "description": "Indica se o servi\u00e7o de impress\u00e3o est\u00e1 rodando. Parado pode impactar impress\u00e3o e depend\u00eancias de software.",
                         "valuemap": {
                             "name": "Valores do service.info"
                         },
@@ -245,11 +525,15 @@
                                 "expression": "last(/Windows Agent/service.info[Spooler,state])<>4",
                                 "name": "Spooler parado",
                                 "priority": "HIGH",
-                                "description": "O servi\u00e7o Spooler n\u00e3o est\u00e1 em execu\u00e7\u00e3o.",
+                                "description": "Dispara se o servi\u00e7o de impress\u00e3o Spooler n\u00e3o est\u00e1 rodando. Impacta impress\u00f5es e depend\u00eancias de software.",
                                 "tags": [
                                     {
                                         "tag": "component",
                                         "value": "service"
+                                    },
+                                    {
+                                        "tag": "service",
+                                        "value": "Spooler"
                                     }
                                 ]
                             }
@@ -261,7 +545,7 @@
                         "key": "system.cpu.util",
                         "value_type": "FLOAT",
                         "units": "%",
-                        "description": "CPU utilization expressed in %.",
+                        "description": "Utiliza\u00e7\u00e3o total da CPU. Alta utiliza\u00e7\u00e3o cont\u00ednua pode indicar necessidade de investiga\u00e7\u00e3o de processos.",
                         "tags": [
                             {
                                 "tag": "component",
@@ -273,7 +557,18 @@
                                 "uuid": "dc75b26fde384468b9be07db0d7560cc",
                                 "expression": "avg(/Windows Agent/system.cpu.util,5m)>90",
                                 "name": "Alta utiliza\u00e7\u00e3o de CPU (>90%) por 5 minutos",
-                                "priority": "HIGH"
+                                "priority": "HIGH",
+                                "description": "Dispara se a CPU estiver acima de 90% por 5 minutos cont\u00ednuos. Ajuda a identificar processos pesados ou loop infinito.",
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "cpu"
+                                    },
+                                    {
+                                        "tag": "threshold",
+                                        "value": "90%"
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -284,7 +579,7 @@
                         "delay": "1h",
                         "value_type": "CHAR",
                         "trends": "0",
-                        "description": "The host name of the system.",
+                        "description": "Nome do host no Windows. \u00datil para invent\u00e1rio e identifica\u00e7\u00e3o de host.",
                         "inventory_link": "NAME",
                         "preprocessing": [
                             {
@@ -306,7 +601,7 @@
                         "name": "System local time",
                         "key": "system.localtime",
                         "units": "unixtime",
-                        "description": "The local system time of the host.",
+                        "description": "Hora local do sistema. \u00datil para correla\u00e7\u00e3o de logs e eventos.",
                         "tags": [
                             {
                                 "tag": "component",
@@ -321,7 +616,7 @@
                         "delay": "1h",
                         "value_type": "CHAR",
                         "trends": "0",
-                        "description": "The architecture of the operating system.",
+                        "description": "Arquitetura do sistema (x86/x64).",
                         "preprocessing": [
                             {
                                 "type": "DISCARD_UNCHANGED_HEARTBEAT",
@@ -344,6 +639,7 @@
                         "delay": "1h",
                         "value_type": "CHAR",
                         "trends": "0",
+                        "description": "Vers\u00e3o e edi\u00e7\u00e3o do Windows.",
                         "inventory_link": "OS",
                         "preprocessing": [
                             {
@@ -365,7 +661,7 @@
                         "name": "Total swap space",
                         "key": "system.swap.size[,total]",
                         "units": "B",
-                        "description": "The total space of the swap volume/file expressed in bytes.",
+                        "description": "Tamanho total do arquivo de pagina\u00e7\u00e3o.",
                         "tags": [
                             {
                                 "tag": "component",
@@ -384,7 +680,7 @@
                         "delay": "15m",
                         "value_type": "CHAR",
                         "trends": "0",
-                        "description": "System description of the host.",
+                        "description": "Descri\u00e7\u00e3o completa do sistema, incluindo hostname, vers\u00e3o e arquitetura.",
                         "preprocessing": [
                             {
                                 "type": "DISCARD_UNCHANGED_HEARTBEAT",
@@ -407,7 +703,7 @@
                         "delay": "10s",
                         "trends": "0",
                         "units": "uptime",
-                        "description": "The system uptime expressed in the following format: \"N days, hh:mm:ss\".",
+                        "description": "Tempo que o host est\u00e1 ligado. Pode ser usado para detectar reinicializa\u00e7\u00f5es recentes.",
                         "tags": [
                             {
                                 "tag": "component",
@@ -419,13 +715,31 @@
                                 "uuid": "aa8898f2786a4a9aacc846c0534efe2b",
                                 "expression": "last(/Windows Agent/system.uptime)<300",
                                 "name": "Ativo a 5min",
-                                "priority": "INFO"
+                                "priority": "INFO",
+                                "description": "Dispara se o host est\u00e1 ligado h\u00e1 menos de 5 minutos. Ajuda a rastrear boot recente.",
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "system"
+                                    }
+                                ]
                             },
                             {
                                 "uuid": "7f0b9c8366d64400a71df385b6f71544",
                                 "expression": "change(/Windows Agent/system.uptime)>0 and last(/Windows Agent/system.uptime)<600",
                                 "name": "Sistema reiniciado (uptime menor que 10 min)",
-                                "priority": "INFO"
+                                "priority": "INFO",
+                                "description": "Dispara quando o host foi reiniciado recentemente (menos de 10 minutos). \u00datil para validar reinicializa\u00e7\u00f5es.",
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "system"
+                                    },
+                                    {
+                                        "tag": "event",
+                                        "value": "restart"
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -434,7 +748,7 @@
                         "name": "Total memory",
                         "key": "vm.memory.size[total]",
                         "units": "B",
-                        "description": "Total memory expressed in bytes.",
+                        "description": "Quantidade total de RAM instalada no host.",
                         "tags": [
                             {
                                 "tag": "component",
@@ -447,7 +761,7 @@
                         "name": "Used memory",
                         "key": "vm.memory.size[used]",
                         "units": "B",
-                        "description": "Used memory in bytes.",
+                        "description": "Quantidade de mem\u00f3ria RAM atualmente em uso.",
                         "tags": [
                             {
                                 "tag": "component",
@@ -463,7 +777,7 @@
                         "value_type": "FLOAT",
                         "units": "%",
                         "params": "last(//vm.memory.size[used]) / last(//vm.memory.size[total]) * 100",
-                        "description": "Memory utilization in %.",
+                        "description": "Percentual de mem\u00f3ria RAM utilizada.",
                         "tags": [
                             {
                                 "tag": "component",
@@ -475,7 +789,18 @@
                                 "uuid": "b4bc23e973944905aeeb546a081596c3",
                                 "expression": "last(/Windows Agent/vm.memory.util)>90",
                                 "name": "Utiliza\u00e7\u00e3o de mem\u00f3ria >90%",
-                                "priority": "HIGH"
+                                "priority": "HIGH",
+                                "description": "Dispara quando o consumo de mem\u00f3ria ultrapassa 90%. Pode causar lentid\u00e3o ou travamentos.",
+                                "tags": [
+                                    {
+                                        "tag": "component",
+                                        "value": "memory"
+                                    },
+                                    {
+                                        "tag": "threshold",
+                                        "value": "90%"
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -483,7 +808,7 @@
                         "uuid": "89b263ee0288488eba4ef537b659b627",
                         "name": "Number of cores",
                         "key": "wmi.get[root/cimv2,\"Select NumberOfLogicalProcessors from Win32_ComputerSystem\"]",
-                        "description": "The number of logical processors available on the computer.",
+                        "description": "N\u00famero de n\u00facleos l\u00f3gicos da CPU.",
                         "tags": [
                             {
                                 "tag": "component",
@@ -498,6 +823,7 @@
                         "name": "Descoberta autom\u00e1tica de interfaces de rede",
                         "key": "net.if.discovery",
                         "delay": "1h",
+                        "status": "DISABLED",
                         "filter": {
                             "evaltype": "AND",
                             "conditions": [
@@ -739,6 +1065,7 @@
                         "name": "Descoberta de sistemas de arquivos",
                         "type": "ZABBIX_ACTIVE",
                         "key": "vfs.fs.dependent.discovery",
+                        "status": "DISABLED",
                         "filter": {
                             "conditions": [
                                 {
