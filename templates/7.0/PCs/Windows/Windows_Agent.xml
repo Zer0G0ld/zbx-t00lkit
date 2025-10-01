@@ -23,7 +23,8 @@
                     <uuid>cbe3ab9ad4244c0aaaaac8b4ee131d62</uuid>
                     <name>Zabbix agent ping</name>
                     <key>agent.ping</key>
-                    <description>The agent always returns &quot;1&quot; for this item. May be used in combination with `nodata()` for the availability check.</description>
+                    <delay>10s</delay>
+                    <description>Verifica se o agente Zabbix no host está ativo. Dispara alerta se não responder.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
@@ -36,11 +37,19 @@
                             <expression>last(/Windows Agent/agent.ping)=0</expression>
                             <name>Agente não responde</name>
                             <priority>AVERAGE</priority>
+                            <description>Dispara se o host não responder ao ping do Zabbix Agent. Importante para monitoramento de conectividade.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>agent</value>
+                                </tag>
+                            </tags>
                         </trigger>
                         <trigger>
                             <uuid>6785dd8382104468b0a15dfd5c48a063</uuid>
                             <expression>last(/Windows Agent/agent.ping)=0</expression>
                             <name>Agent ping Teste 1</name>
+                            <status>DISABLED</status>
                             <priority>DISASTER</priority>
                         </trigger>
                         <trigger>
@@ -48,27 +57,179 @@
                             <expression>last(/Windows Agent/agent.ping)&lt;&gt;0</expression>
                             <name>Serviço Zabbix Agent está parado</name>
                             <priority>HIGH</priority>
+                            <description>Dispara se o agente Zabbix não está respondendo. Pode indicar host offline ou problema de rede.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>agent</value>
+                                </tag>
+                                <tag>
+                                    <tag>service</tag>
+                                    <value>Zabbix</value>
+                                </tag>
+                            </tags>
+                        </trigger>
+                        <trigger>
+                            <uuid>9d7086599b814d46b534b37fe2f05811</uuid>
+                            <expression>last(/Windows Agent/agent.ping)=1</expression>
+                            <name>Teste Alerta</name>
+                            <status>DISABLED</status>
+                            <priority>DISASTER</priority>
+                            <type>MULTIPLE</type>
                         </trigger>
                     </triggers>
                 </item>
                 <item>
-                    <uuid>c03b4fd044da492195238a9bd8c3fb48</uuid>
-                    <name>Erros no EventLog - System</name>
+                    <uuid>a6e011cf720941c498fd0e9614cd491f</uuid>
+                    <name>EventLog - Application Error (ID 1000)</name>
                     <type>ZABBIX_ACTIVE</type>
-                    <key>eventlog[System,,Error]</key>
+                    <key>eventlog[Application,,Error,,1000]</key>
+                    <delay>30s</delay>
                     <value_type>LOG</value_type>
                     <trends>0</trends>
+                    <description>Detecta falha de aplicativos críticos. Útil para monitorar travamentos de serviços ou software crítico.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>application</value>
+                        </tag>
+                        <tag>
+                            <tag>eventlog</tag>
+                            <value>1000</value>
+                        </tag>
+                    </tags>
                     <triggers>
                         <trigger>
-                            <uuid>33ce7480dc3b49d881b38693d28b6e04</uuid>
-                            <expression>last(/Windows Agent/eventlog[System,,Error],#1)&lt;&gt;0</expression>
-                            <name>Erros no EventLog - System</name>
-                            <priority>DISASTER</priority>
-                            <description>Novo erro detectado no log de eventos do Windows (System).</description>
+                            <uuid>57a9c2c8572449b2b32fe4c70b6b8ca9</uuid>
+                            <expression>last(/Windows Agent/eventlog[Application,,Error,,1000])&lt;&gt;0</expression>
+                            <name>Falha de Aplicativo detectada (EventID 1000)</name>
+                            <priority>WARNING</priority>
+                            <description>Dispara quando algum aplicativo crítico falha (ID 1000). Ajuda a identificar serviços/parâmetros que precisam de correção.</description>
                             <tags>
                                 <tag>
                                     <tag>component</tag>
-                                    <value>eventlog</value>
+                                    <value>application</value>
+                                </tag>
+                                <tag>
+                                    <tag>eventlog</tag>
+                                    <value>1000</value>
+                                </tag>
+                            </tags>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>0a9e3ab5e9d0426a907d1f14e39b0b2a</uuid>
+                    <name>EventLog - Kernel Power (ID 41)</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>eventlog[System,,Critical,,41]</key>
+                    <delay>30s</delay>
+                    <value_type>LOG</value_type>
+                    <trends>0</trends>
+                    <description>Detecta reinicializações inesperadas ou quedas de energia, indicando risco de perda de dados.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>system,</value>
+                        </tag>
+                        <tag>
+                            <tag>eventlog</tag>
+                            <value>41</value>
+                        </tag>
+                    </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>4e257a018d084ac2bf59e37ed501c92c</uuid>
+                            <expression>last(/Windows Agent/eventlog[System,,Critical,,41])&lt;&gt;0</expression>
+                            <name>Reinicialização inesperada / Queda de energia (EventID 41)</name>
+                            <priority>HIGH</priority>
+                            <description>Indica desligamento inesperado ou queda de energia. Importante para rastrear perda de dados ou falhas de hardware.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>system</value>
+                                </tag>
+                                <tag>
+                                    <tag>eventlog</tag>
+                                    <value>41</value>
+                                </tag>
+                            </tags>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>a15fc697085b45059777fdf6eb735101</uuid>
+                    <name>EventLog - Bad Block (ID 7)</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>eventlog[System,,Error,,7]</key>
+                    <delay>30s</delay>
+                    <value_type>LOG</value_type>
+                    <trends>0</trends>
+                    <description>Indica setores defeituosos em HD/SSD. Ação recomendada: backup e verificação de disco.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>disk</value>
+                        </tag>
+                        <tag>
+                            <tag>eventlog</tag>
+                            <value>7</value>
+                        </tag>
+                    </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>e1f4fe09c7a940799df6c75ee7417ec6</uuid>
+                            <expression>last(/Windows Agent/eventlog[System,,Error,,7])&lt;&gt;0</expression>
+                            <name>Falha de disco detectada (Bad Block - EventID 7)</name>
+                            <priority>DISASTER</priority>
+                            <description>Dispara quando o Windows registra erro de Bad Block. Pode indicar setores defeituosos no HD/SSD. Ação imediata: backup + verificar disco.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>disk</value>
+                                </tag>
+                                <tag>
+                                    <tag>eventlog</tag>
+                                    <value>7</value>
+                                </tag>
+                            </tags>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>13e32c8c676b480bb73bca6eb502095d</uuid>
+                    <name>EventLog - Virtual Memory Error (ID 2020/2021)</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>eventlog[System,,Error,,2020,2021]</key>
+                    <delay>30s</delay>
+                    <value_type>LOG</value_type>
+                    <trends>0</trends>
+                    <description>Sistema sem memória virtual ou memória de pool não paginada, podendo travar Windows.</description>
+                    <tags>
+                        <tag>
+                            <tag>component</tag>
+                            <value>memory</value>
+                        </tag>
+                        <tag>
+                            <tag>eventlog</tag>
+                            <value>2020/2021</value>
+                        </tag>
+                    </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>03665e5616044073a99296dfc0d83775</uuid>
+                            <expression>last(/Windows Agent/eventlog[System,,Error,,2020,2021])&lt;&gt;0</expression>
+                            <name>Falta de memória virtual (EventID 2020/2021)</name>
+                            <priority>DISASTER</priority>
+                            <description>Dispara quando o sistema está sem memória virtual (2020) ou memória de pool não paginada (2021). Pode travar o Windows.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>memory</value>
+                                </tag>
+                                <tag>
+                                    <tag>eventlog</tag>
+                                    <value>2020/2021</value>
                                 </tag>
                             </tags>
                         </trigger>
@@ -79,7 +240,7 @@
                     <name>Cache bytes</name>
                     <key>perf_counter_en[&quot;\Memory\Cache Bytes&quot;]</key>
                     <units>B</units>
-                    <description>Cache Bytes is the sum of the Memory\\System Cache Resident Bytes, Memory\\System Driver Resident Bytes, Memory\\System Code Resident Bytes, and Memory\\Pool Paged Resident Bytes counters. This counter displays the last observed value only; it is not an average.</description>
+                    <description>Quantidade de memória cache em uso. Pode ajudar a identificar consumo excessivo de memória.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
@@ -92,8 +253,7 @@
                     <name>Memory pool non-paged</name>
                     <key>perf_counter_en[&quot;\Memory\Pool Nonpaged Bytes&quot;]</key>
                     <units>B</units>
-                    <description>This measures the size, in bytes, of the non-paged pool. This is an area of system memory for objects that cannot be written to disk but instead must remain in physical memory as long as they are allocated.
-There is a possible memory leak if the value is greater than 175MB (or 100MB with the /3GB switch). Consequently, Event ID 2019 is recorded in the system event log.</description>
+                    <description>Memória não paginada em uso. Uso elevado pode indicar vazamento de memória de drivers.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
@@ -106,6 +266,17 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                             <expression>last(/Windows Agent/perf_counter_en[&quot;\Memory\Pool Nonpaged Bytes&quot;])&gt;524288000</expression>
                             <name>Memória não paginada alta (&gt;500MB)</name>
                             <priority>AVERAGE</priority>
+                            <description>Dispara quando a memória não paginada ultrapassa 500MB. Pode indicar vazamento de memória de drivers.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>memory</value>
+                                </tag>
+                                <tag>
+                                    <tag>threshold</tag>
+                                    <value>500MB</value>
+                                </tag>
+                            </tags>
                         </trigger>
                     </triggers>
                 </item>
@@ -115,7 +286,7 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <key>perf_counter_en[&quot;\Paging file(_Total)\% Usage&quot;]</key>
                     <value_type>FLOAT</value_type>
                     <units>%</units>
-                    <description>The used space of swap volume/file in percent.</description>
+                    <description>Percentual de uso do arquivo de paginação. Uso alto pode indicar falta de memória RAM.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
@@ -132,6 +303,17 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                             <expression>last(/Windows Agent/perf_counter_en[&quot;\Paging file(_Total)\% Usage&quot;])&gt;70</expression>
                             <name>Uso de Swap acima de 70%</name>
                             <priority>AVERAGE</priority>
+                            <description>Dispara quando o arquivo de paginação ultrapassa 70% de uso. Pode indicar falta de memória física.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>memory</value>
+                                </tag>
+                                <tag>
+                                    <tag>threshold</tag>
+                                    <value>70%</value>
+                                </tag>
+                            </tags>
                         </trigger>
                     </triggers>
                 </item>
@@ -141,13 +323,32 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <key>perf_counter_en[&quot;\Processor Information(_total)\% DPC Time&quot;]</key>
                     <value_type>FLOAT</value_type>
                     <units>%</units>
-                    <description>Processor DPC time is the time that a single processor spent receiving and servicing deferred procedure calls (DPCs). DPCs are interrupts that run at a lower priority than standard interrupts. `% DPC Time` is a component of `% Privileged Time` because DPCs are executed in privileged mode. If a high `% DPC Time` is sustained, there may be a processor bottleneck or an application or hardware related issue that can significantly diminish overall system performance.</description>
+                    <description>Tempo gasto em rotinas DPC (Deferred Procedure Call). Valores altos indicam drivers ou hardware gerando overhead.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
                             <value>cpu</value>
                         </tag>
                     </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>dcf8c7769be046f8823ef94a4d34dc4d</uuid>
+                            <expression>last(/Windows Agent/perf_counter_en[&quot;\Processor Information(_total)\% DPC Time&quot;])&gt;5</expression>
+                            <name>CPU DPC Time anormal</name>
+                            <priority>AVERAGE</priority>
+                            <description>Tempo gasto em Deferred Procedure Calls (DPC) acima de 5%. Pode indicar que drivers ou hardware estão causando overhead na CPU, afetando performance.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>cpu</value>
+                                </tag>
+                                <tag>
+                                    <tag>metric</tag>
+                                    <value>DPC Time</value>
+                                </tag>
+                            </tags>
+                        </trigger>
+                    </triggers>
                 </item>
                 <item>
                     <uuid>3a139c6aa75e469b87fbd0ff7e0c5ec0</uuid>
@@ -155,13 +356,32 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <key>perf_counter_en[&quot;\Processor Information(_total)\% Interrupt Time&quot;]</key>
                     <value_type>FLOAT</value_type>
                     <units>%</units>
-                    <description>The processor information `% Interrupt Time` counter indicates how much time the processor spends handling hardware interrupts during sample intervals. It reflects the activity of devices like the system clock, mouse, disk drivers, and network cards. A value above 20% suggests possible hardware issues.</description>
+                    <description>Percentual de tempo gasto com interrupções de hardware. Valores altos indicam possível problema de dispositivo.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
                             <value>cpu</value>
                         </tag>
                     </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>fb1349434de74fe8a73d95001eb08d90</uuid>
+                            <expression>last(/Windows Agent/perf_counter_en[&quot;\Processor Information(_total)\% Interrupt Time&quot;])&gt;5</expression>
+                            <name>CPU Interrupt Time alta</name>
+                            <priority>AVERAGE</priority>
+                            <description>Percentual de tempo gasto com interrupções de hardware acima de 5%. Pode indicar problemas em dispositivos ou drivers que geram muitas interrupções.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>cpu</value>
+                                </tag>
+                                <tag>
+                                    <tag>metric</tag>
+                                    <value>Interrupt Time</value>
+                                </tag>
+                            </tags>
+                        </trigger>
+                    </triggers>
                 </item>
                 <item>
                     <uuid>d586f35719104e2b9d01cc3f4a43753b</uuid>
@@ -169,13 +389,49 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <key>perf_counter_en[&quot;\Processor Information(_total)\% Privileged Time&quot;]</key>
                     <value_type>FLOAT</value_type>
                     <units>%</units>
-                    <description>The processor information `% Privileged Time` counter shows the percent of time that the processor is spent executing in Kernel (or Privileged) mode. Privileged mode includes services interrupts inside Interrupt Service Routines (ISRs), executing Deferred Procedure Calls (DPCs), Device Driver calls and other kernel-mode functions of the Windows Operating System.</description>
+                    <description>Percentual de tempo da CPU em modo kernel. Valores altos podem indicar processos pesados ou drivers problemáticos.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
                             <value>cpu</value>
                         </tag>
                     </tags>
+                    <triggers>
+                        <trigger>
+                            <uuid>cb43d46f471349e798090c9990856b02</uuid>
+                            <expression>last(/Windows Agent/perf_counter_en[&quot;\Processor Information(_total)\% Privileged Time&quot;])&gt;70</expression>
+                            <name>CPU Privileged Time alta</name>
+                            <priority>HIGH</priority>
+                            <description>Percentual da CPU em modo kernel acima de 70%. Valores altos podem indicar drivers ou processos problemáticos que impactam a performance do sistema.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>cpu</value>
+                                </tag>
+                                <tag>
+                                    <tag>metric</tag>
+                                    <value>Privileged Time</value>
+                                </tag>
+                            </tags>
+                        </trigger>
+                        <trigger>
+                            <uuid>fee2a5565d0d44289edff96054dd6fd0</uuid>
+                            <expression>last(/Windows Agent/perf_counter_en[&quot;\Processor Information(_total)\% Privileged Time&quot;])&gt;80</expression>
+                            <name>CPU User Time alta</name>
+                            <priority>HIGH</priority>
+                            <description>Percentual da CPU em modo usuário acima de 80%. Indica processos pesados que estão consumindo muitos recursos do processador.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>cpu</value>
+                                </tag>
+                                <tag>
+                                    <tag>metric</tag>
+                                    <value>User Time</value>
+                                </tag>
+                            </tags>
+                        </trigger>
+                    </triggers>
                 </item>
                 <item>
                     <uuid>7cd662aba17e48fd961e8dd19637d125</uuid>
@@ -183,7 +439,7 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <key>perf_counter_en[&quot;\Processor Information(_total)\% User Time&quot;]</key>
                     <value_type>FLOAT</value_type>
                     <units>%</units>
-                    <description>The processor information `% User Time` counter shows the percent of time that the processor(s) is spent executing in User mode.</description>
+                    <description>Percentual de tempo da CPU executando código em modo usuário. Alta utilização indica processos intensivos em CPU.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
@@ -196,7 +452,7 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <name>CPU queue length</name>
                     <key>perf_counter_en[&quot;\System\Processor Queue Length&quot;]</key>
                     <value_type>FLOAT</value_type>
-                    <description>The Processor Queue Length shows the number of threads that are observed as delayed in the processor Ready Queue and are waiting to be executed.</description>
+                    <description>Número de threads esperando por CPU. Valores altos por muito tempo indicam gargalo de processamento.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
@@ -209,6 +465,17 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                             <expression>avg(/Windows Agent/perf_counter_en[&quot;\System\Processor Queue Length&quot;],5m)&gt;5</expression>
                             <name>Alta fila de processador (&gt;5) por 5 minutos</name>
                             <priority>AVERAGE</priority>
+                            <description>Dispara se a fila de CPU estiver acima de 5 por 5 minutos. Indica gargalo de processamento.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>cpu</value>
+                                </tag>
+                                <tag>
+                                    <tag>threshold</tag>
+                                    <value>5</value>
+                                </tag>
+                            </tags>
                         </trigger>
                     </triggers>
                 </item>
@@ -216,7 +483,7 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <uuid>42d47118592e4d47936a1697c7115e08</uuid>
                     <name>Number of processes</name>
                     <key>proc.num[]</key>
-                    <description>The number of processes.</description>
+                    <description>Número total de processos ativos. Pode ser usado para detectar excesso de processos ou loops infinitos.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
@@ -229,6 +496,17 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                             <expression>last(/Windows Agent/proc.num[])&gt;=100</expression>
                             <name>Numero de Processos passou de 100</name>
                             <priority>AVERAGE</priority>
+                            <description>Dispara quando a quantidade de processos ativos excede 100. Pode indicar software rodando em excesso.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>os</value>
+                                </tag>
+                                <tag>
+                                    <tag>threshold</tag>
+                                    <value>100</value>
+                                </tag>
+                            </tags>
                         </trigger>
                     </triggers>
                 </item>
@@ -237,6 +515,7 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <name>Status do serviço Spooler</name>
                     <type>ZABBIX_ACTIVE</type>
                     <key>service.info[Spooler,state]</key>
+                    <description>Indica se o serviço de impressão está rodando. Parado pode impactar impressão e dependências de software.</description>
                     <valuemap>
                         <name>Valores do service.info</name>
                     </valuemap>
@@ -246,11 +525,15 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                             <expression>last(/Windows Agent/service.info[Spooler,state])&lt;&gt;4</expression>
                             <name>Spooler parado</name>
                             <priority>HIGH</priority>
-                            <description>O serviço Spooler não está em execução.</description>
+                            <description>Dispara se o serviço de impressão Spooler não está rodando. Impacta impressões e dependências de software.</description>
                             <tags>
                                 <tag>
                                     <tag>component</tag>
                                     <value>service</value>
+                                </tag>
+                                <tag>
+                                    <tag>service</tag>
+                                    <value>Spooler</value>
                                 </tag>
                             </tags>
                         </trigger>
@@ -262,7 +545,7 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <key>system.cpu.util</key>
                     <value_type>FLOAT</value_type>
                     <units>%</units>
-                    <description>CPU utilization expressed in %.</description>
+                    <description>Utilização total da CPU. Alta utilização contínua pode indicar necessidade de investigação de processos.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
@@ -275,6 +558,17 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                             <expression>avg(/Windows Agent/system.cpu.util,5m)&gt;90</expression>
                             <name>Alta utilização de CPU (&gt;90%) por 5 minutos</name>
                             <priority>HIGH</priority>
+                            <description>Dispara se a CPU estiver acima de 90% por 5 minutos contínuos. Ajuda a identificar processos pesados ou loop infinito.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>cpu</value>
+                                </tag>
+                                <tag>
+                                    <tag>threshold</tag>
+                                    <value>90%</value>
+                                </tag>
+                            </tags>
                         </trigger>
                     </triggers>
                 </item>
@@ -285,7 +579,7 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <delay>1h</delay>
                     <value_type>CHAR</value_type>
                     <trends>0</trends>
-                    <description>The host name of the system.</description>
+                    <description>Nome do host no Windows. Útil para inventário e identificação de host.</description>
                     <inventory_link>NAME</inventory_link>
                     <preprocessing>
                         <step>
@@ -307,7 +601,7 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <name>System local time</name>
                     <key>system.localtime</key>
                     <units>unixtime</units>
-                    <description>The local system time of the host.</description>
+                    <description>Hora local do sistema. Útil para correlação de logs e eventos.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
@@ -322,7 +616,7 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <delay>1h</delay>
                     <value_type>CHAR</value_type>
                     <trends>0</trends>
-                    <description>The architecture of the operating system.</description>
+                    <description>Arquitetura do sistema (x86/x64).</description>
                     <preprocessing>
                         <step>
                             <type>DISCARD_UNCHANGED_HEARTBEAT</type>
@@ -345,6 +639,7 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <delay>1h</delay>
                     <value_type>CHAR</value_type>
                     <trends>0</trends>
+                    <description>Versão e edição do Windows.</description>
                     <inventory_link>OS</inventory_link>
                     <preprocessing>
                         <step>
@@ -366,7 +661,7 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <name>Total swap space</name>
                     <key>system.swap.size[,total]</key>
                     <units>B</units>
-                    <description>The total space of the swap volume/file expressed in bytes.</description>
+                    <description>Tamanho total do arquivo de paginação.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
@@ -385,7 +680,7 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <delay>15m</delay>
                     <value_type>CHAR</value_type>
                     <trends>0</trends>
-                    <description>System description of the host.</description>
+                    <description>Descrição completa do sistema, incluindo hostname, versão e arquitetura.</description>
                     <preprocessing>
                         <step>
                             <type>DISCARD_UNCHANGED_HEARTBEAT</type>
@@ -408,7 +703,7 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <delay>10s</delay>
                     <trends>0</trends>
                     <units>uptime</units>
-                    <description>The system uptime expressed in the following format: &quot;N days, hh:mm:ss&quot;.</description>
+                    <description>Tempo que o host está ligado. Pode ser usado para detectar reinicializações recentes.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
@@ -421,12 +716,30 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                             <expression>last(/Windows Agent/system.uptime)&lt;300</expression>
                             <name>Ativo a 5min</name>
                             <priority>INFO</priority>
+                            <description>Dispara se o host está ligado há menos de 5 minutos. Ajuda a rastrear boot recente.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>system</value>
+                                </tag>
+                            </tags>
                         </trigger>
                         <trigger>
                             <uuid>7f0b9c8366d64400a71df385b6f71544</uuid>
                             <expression>change(/Windows Agent/system.uptime)&gt;0 and last(/Windows Agent/system.uptime)&lt;600</expression>
                             <name>Sistema reiniciado (uptime menor que 10 min)</name>
                             <priority>INFO</priority>
+                            <description>Dispara quando o host foi reiniciado recentemente (menos de 10 minutos). Útil para validar reinicializações.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>system</value>
+                                </tag>
+                                <tag>
+                                    <tag>event</tag>
+                                    <value>restart</value>
+                                </tag>
+                            </tags>
                         </trigger>
                     </triggers>
                 </item>
@@ -435,7 +748,7 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <name>Total memory</name>
                     <key>vm.memory.size[total]</key>
                     <units>B</units>
-                    <description>Total memory expressed in bytes.</description>
+                    <description>Quantidade total de RAM instalada no host.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
@@ -448,7 +761,7 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <name>Used memory</name>
                     <key>vm.memory.size[used]</key>
                     <units>B</units>
-                    <description>Used memory in bytes.</description>
+                    <description>Quantidade de memória RAM atualmente em uso.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
@@ -464,7 +777,7 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <value_type>FLOAT</value_type>
                     <units>%</units>
                     <params>last(//vm.memory.size[used]) / last(//vm.memory.size[total]) * 100</params>
-                    <description>Memory utilization in %.</description>
+                    <description>Percentual de memória RAM utilizada.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
@@ -477,6 +790,17 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                             <expression>last(/Windows Agent/vm.memory.util)&gt;90</expression>
                             <name>Utilização de memória &gt;90%</name>
                             <priority>HIGH</priority>
+                            <description>Dispara quando o consumo de memória ultrapassa 90%. Pode causar lentidão ou travamentos.</description>
+                            <tags>
+                                <tag>
+                                    <tag>component</tag>
+                                    <value>memory</value>
+                                </tag>
+                                <tag>
+                                    <tag>threshold</tag>
+                                    <value>90%</value>
+                                </tag>
+                            </tags>
                         </trigger>
                     </triggers>
                 </item>
@@ -484,7 +808,7 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <uuid>89b263ee0288488eba4ef537b659b627</uuid>
                     <name>Number of cores</name>
                     <key>wmi.get[root/cimv2,&quot;Select NumberOfLogicalProcessors from Win32_ComputerSystem&quot;]</key>
-                    <description>The number of logical processors available on the computer.</description>
+                    <description>Número de núcleos lógicos da CPU.</description>
                     <tags>
                         <tag>
                             <tag>component</tag>
@@ -499,6 +823,7 @@ There is a possible memory leak if the value is greater than 175MB (or 100MB wit
                     <name>Descoberta automática de interfaces de rede</name>
                     <key>net.if.discovery</key>
                     <delay>1h</delay>
+                    <status>DISABLED</status>
                     <filter>
                         <evaltype>AND</evaltype>
                         <conditions>
@@ -800,6 +1125,7 @@ Observações: Ideal para serviços como WinDefend, wuauserv, Spooler, EventLog,
                     <name>Descoberta de sistemas de arquivos</name>
                     <type>ZABBIX_ACTIVE</type>
                     <key>vfs.fs.dependent.discovery</key>
+                    <status>DISABLED</status>
                     <filter>
                         <conditions>
                             <condition>
