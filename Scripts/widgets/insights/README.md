@@ -8,7 +8,7 @@ O **Widget Insights Dashboard** adiciona inteligência ao seu **Zabbix Dashboard
 
 ```bash
 cd /usr/share/zabbix/widgets/
-wget https://github.com/Zer0G0ld/zbx-t00lkit/raw/refs/heads/main/Scripts/insights.zip
+sudo wget https://github.com/Zer0G0ld/zbx-t00lkit/raw/refs/heads/main/releases/insights.zip
 unzip insights.zip
 ````
 
